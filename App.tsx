@@ -1,20 +1,31 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import TextFieldLogin from './src/components/textFieldLogin';
+import LoginScreen from './src/screens/loginPage';
+import { GluestackUIProvider } from '@gluestack-ui/themed';
+import { PaperProvider } from 'react-native-paper';
+import { config } from '@gluestack-ui/config';
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+   <GluestackUIProvider config={config}>
+      <PaperProvider>
+        <View style={styles.container}>
+          <ScrollView>
+            <LoginScreen />
+          </ScrollView>
+        </View>
+      </PaperProvider>
+    </GluestackUIProvider>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'darkgrey',
     alignItems: 'center',
     justifyContent: 'center',
   },
+
 });
