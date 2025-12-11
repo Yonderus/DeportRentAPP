@@ -17,7 +17,7 @@ const TextFieldLogin: React.FC<Props> = ({
   return (
     <View style={styles.container}>
 
-      {/* ICONO DENTRO DEL INPUT */}
+      {/*Lo del icono me ha ayudado la IA*/}
       {icon && <View style={styles.icon}>{icon}</View>}
 
       <TextInput
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   },
 
   icon: {
-    marginRight: 8,                // separación
+    marginRight: 8, 
   },
 
   input: {

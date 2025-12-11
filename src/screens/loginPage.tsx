@@ -1,27 +1,16 @@
 import React from "react";
 import {
   Box,
-  VStack,
-  Input,
-  InputField,
-  InputIcon,
-  InputSlot,
   Button,
   ButtonText,
   Text,
-  Heading,
   Pressable,
   Center,
-  Divider,
 } from "@gluestack-ui/themed";
-import { Mail, Lock, Eye, Icon, icons, Bold, TextIcon } from "lucide-react-native";
 import TextFieldLogin from "../components/textFieldLogin";
 import {StyleSheet} from 'react-native';
 import { Avatar } from "react-native-paper";
-import { black } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
-
-
 
 export default function LoginPage(){
   
