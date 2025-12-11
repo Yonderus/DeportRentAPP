@@ -1,0 +1,10 @@
+11/12/2025
+Primera parte del proyecto:
+
+    En esta primera parte del proyecto hemos creado una pantalla de login con el aspecto más similar posible al que nos habián dado.
+    Hemos utilizado librerías Gluestack UI y React Native Paper, hemos utilizado también el Feather y el MaterialCommunityIcons para utilizar los iconos
+
+    Complicaciones:
+          Mi mayor complicación ha estado en poner los iconos dentro del componente textFieldLogin.tsx
+          Otra de las complicaciones se podría decir la poca soltura que de momento tengo con los estilos y etiquetas al igual que en el funcionamiento, lo cual ha hecho que me retrase más
+          Otra complicación podría ser la estructura seguida del Login, no se si debería haber creado más componentes, o no.
