@@ -19,7 +19,7 @@ export default function LoginPage(){
     <Center>
       
        <Box style={styles.card}>
-
+        
        <Avatar.Icon 
           size={80}
           icon="lock"
@@ -36,7 +36,6 @@ export default function LoginPage(){
         <TextFieldLogin 
         placeholder="nombre@ejemplo.com"
         icon={<Feather name="mail" size={20} color="#4B5563" />}
-
         />
 
       <Text justifyContent="space-between">
@@ -49,9 +48,9 @@ export default function LoginPage(){
       </Text>
     
       <TextFieldLogin
+      icon={<Feather name="lock" size={20} color="#4B5563" />}
       placeholder="********"
       secure
-      icon={<Feather name="lock" size={20} color="#4B5563" />}
       />
 
       <Button style={styles.inicioS}>
