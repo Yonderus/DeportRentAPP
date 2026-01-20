@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { TextInput } from "react-native-paper";
 
-
-
 interface Props {
   placeholder?: string;
   secure?: boolean;
