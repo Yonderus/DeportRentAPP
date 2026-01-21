@@ -25,6 +25,7 @@ export default function TabLayout() {
           }}
         />
 
+        {/* IMPORTANTE: en minúsculas y que coincida con la carpeta */}
         <Tabs.Screen
           name="clientes"
           options={{
@@ -34,6 +35,8 @@ export default function TabLayout() {
             ),
           }}
         />
+
+        
 
         <Tabs.Screen
           name="inventario"

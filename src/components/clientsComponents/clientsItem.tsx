@@ -1,51 +1,69 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { IconButton } from "react-native-paper";
+import { Pressable, View, Text, StyleSheet } from "react-native";
+import { Avatar } from "react-native-paper";
 import { Client } from "../../data/clients";
 
 type Props = {
   client: Client;
-  onEdit: (c: Client) => void;
-  onDelete: (id: number) => void;
+  onPress: (client: Client) => void;
 };
 
-export default function ClienteItem({ client, onEdit, onDelete }: Props) {
+export default function ClienteItem({ client, onPress }: Props) {
+  const iniciales =
+    (client.name?.charAt(0) ?? "") + (client.surname?.charAt(0) ?? "");
+
   return (
-    <View style={s.row}>
-      <View style={{ flex: 1 }}>
+    <Pressable
+      onPress={() => onPress(client)}
+      style={({ pressed }) => [s.card, pressed && s.pressed]}
+    >
+      <Avatar.Text
+        size={44}
+        label={iniciales.toUpperCase()}
+        style={s.avatar}
+        labelStyle={s.avatarText}
+      />
+
+      <View style={s.info}>
         <Text style={s.name}>
           {client.name} {client.surname}
         </Text>
-        <Text style={s.text}>{client.phone}</Text>
-        {client.email ? <Text style={s.text}>{client.email}</Text> : null}
+
+        <Text style={s.secondary}>{client.phone}</Text>
+
+        {client.email ? (
+          <Text style={s.secondary} numberOfLines={1}>
+            {client.email}
+          </Text>
+        ) : null}
       </View>
 
-      <IconButton icon="pencil" onPress={() => onEdit(client)} />
-      <IconButton icon="delete" onPress={() => onDelete(client.id)} />
-    </View>
+      <Text style={s.chevron}>›</Text>
+    </Pressable>
   );
 }
 
 const s = StyleSheet.create({
-  row: {
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: "#dcdcdc",
-    borderRadius: 10,
-    marginBottom: 10,
+  card: {
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 12,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
-  name: {
-    fontSize: 16,
-    fontWeight: "800",
-    color: "#222",
-    marginBottom: 2,
-  },
-  text: {
-    fontSize: 14,
-    color: "#606060ff",
-    fontWeight: "600",
-  },
+  pressed: { opacity: 0.85 },
+  avatar: { backgroundColor: "#3b82f6", marginRight: 12 },
+  avatarText: { fontWeight: "800", color: "white" },
+  info: { flex: 1 },
+  name: { fontSize: 16, fontWeight: "800", color: "#111827" },
+  secondary: { fontSize: 13, color: "#6B7280", marginTop: 2 },
+  chevron: { fontSize: 28, fontWeight: "900", color: "#9CA3AF", marginLeft: 8 },
 });

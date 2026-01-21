@@ -6,9 +6,10 @@ export default function RootLayout() {
     <PaperProvider>
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: "#0f172a" },
-          headerTintColor: "#ffffff",
-          title: "DeportRentAPP",
+          headerShown: false,
+          // headerStyle: { backgroundColor: "#0f172a" },
+          // headerTintColor: "#ffffff",
+          // title: "DeportRentAPP",
         }}
       />
     </PaperProvider>

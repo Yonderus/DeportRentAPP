@@ -153,11 +153,12 @@ const styles = StyleSheet.create({
 
   googleBtn: {
     backgroundColor: "#F3F4F6",
-    marginTop: 10,
+    marginTop: 20,
     borderColor: "#E5E7EB",
     borderWidth: 1,
     borderRadius: 12,
     paddingVertical: 12,
+    height: 45,
   },
 
   googleRow: {

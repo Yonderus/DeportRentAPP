@@ -4,6 +4,7 @@
     "slug": "DeportRentAPP",
     "version": "1.0.0",
     "orientation": "portrait",
+    "scheme": "deportrent",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
