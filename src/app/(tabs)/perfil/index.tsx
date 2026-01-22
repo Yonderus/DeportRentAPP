@@ -12,24 +12,13 @@ export default function PerfilScreen() {
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
 
-  const nombreInicial = useMemo(() => nombreVisible ?? "", [nombreVisible]);
-  const [nuevoNombre, setNuevoNombre] = useState(nombreInicial);
-
-  const guardar = () => {
-    const limpio = nuevoNombre.trim();
-    if (limpio.length === 0) return;
-    setNombreVisible(limpio);
-  };
-
   return (
     <View style={{ flex: 1, padding: 16, gap: 12, backgroundColor: colores.fondoPrincipal }}>
-      {/* Cabecera simple con settings */}
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
         <Text variant="headlineSmall" style={{ fontWeight: "700", color: colores.textoPrincipal }}>
           Perfil
         </Text>
 
-        {/* Botón settings */}
         <IconButton
           icon="cog"
           size={26}
