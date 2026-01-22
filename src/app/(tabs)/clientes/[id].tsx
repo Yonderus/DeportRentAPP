@@ -8,12 +8,14 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import { router, Stack, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 
 import { Client } from "../../../data/clients";
 import { getClientById, updateClient, deleteClient } from "../../../services/clientsService";
 import ClienteDialog, { ClientForm } from "../../../components/clientsComponents/clientsDialog";
+import { useTemaStore } from "../preferencias";
+import { obtenerColores } from "../../../theme";
 
 const toForm = (c: Client): ClientForm => ({
   name: c.name,
@@ -26,6 +28,8 @@ const toForm = (c: Client): ClientForm => ({
 export default function ClienteDetallado() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const clientId = Number(id);
+  const tema = useTemaStore((s) => s.tema);
+  const colores = obtenerColores(tema);
 
   const [cliente, setCliente] = useState<Client | null>(null);
   const [cargando, setCargando] = useState(true);
@@ -60,72 +64,74 @@ export default function ClienteDetallado() {
 
   if (cargando) {
     return (
-      <View style={s.center}>
+      <View style={[s.center, { backgroundColor: colores.fondoPrincipal }]}>
         <ActivityIndicator size="large" />
-        <Text style={s.loadingText}>Cargando cliente...</Text>
+        <Text style={[s.loadingText, { color: colores.textoSecundario }]}>Cargando cliente...</Text>
       </View>
     );
   }
 
   if (!cliente) {
     return (
-      <View style={s.center}>
-        <Text style={s.error}>Cliente no encontrado</Text>
+      <View style={[s.center, { backgroundColor: colores.fondoPrincipal }]}>
+        <Text style={[s.error, { color: colores.enlaces }]}>Cliente no encontrado</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={s.container}>
-      <Stack.Screen
-        options={{
-          title: `Cliente ${cliente.id}`,
-          headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()} style={{ padding: 12 }}>
-              <Feather name="chevron-left" size={25} color="#000000" />
-            </TouchableOpacity>
-          ),
-        }}
-      />
+    <ScrollView 
+      style={[s.container, { backgroundColor: colores.fondoPrincipal }]}
+      contentContainerStyle={{ paddingBottom: 20 }}
+    >
+      {/* Botón de atrás */}
+      <TouchableOpacity 
+        onPress={() => router.back()} 
+        style={{ padding: 16, paddingBottom: 8 }}
+      >
+        <Feather name="chevron-left" size={28} color={colores.textoPrincipal} />
+      </TouchableOpacity>
 
       <View style={s.header}>
-        <Feather name="user" size={32} color="#3b82f6" />
-        <Text style={s.name}>
+        <Feather name="user" size={32} color={colores.btnPrimario} />
+        <Text style={[s.name, { color: colores.textoPrincipal }]}>
           {cliente.name} {cliente.surname}
         </Text>
       </View>
 
-      <View style={s.card}>
+      <View style={[s.card, { backgroundColor: colores.fondoCard }]}>
         <View style={s.row}>
-          <Feather name="mail" size={18} color="#6B7280" />
-          <Text style={s.value}>{cliente.email || "-"}</Text>
+          <Feather name="mail" size={18} color={colores.iconoColorGris} />
+          <Text style={[s.value, { color: colores.textoSecundario }]}>{cliente.email || "-"}</Text>
         </View>
 
         <View style={s.row}>
-          <Feather name="phone" size={18} color="#6B7280" />
-          <Text style={s.value}>{cliente.phone}</Text>
+          <Feather name="phone" size={18} color={colores.iconoColorGris} />
+          <Text style={[s.value, { color: colores.textoSecundario }]}>{cliente.phone}</Text>
         </View>
       </View>
 
-      <Text style={s.sectionTitle}>Pedidos</Text>
+      <View style={{ paddingHorizontal: 16 }}>
+        <Text style={[s.sectionTitle, { color: colores.textoPrincipal }]}>Pedidos</Text>
+      </View>
 
-      <View style={s.card}>
+      <View style={[s.card, { backgroundColor: colores.fondoCard }]}>
         {cliente.pedidos.length === 0 ? (
-          <Text style={s.empty}>Este cliente no tiene pedidos</Text>
+          <Text style={[s.empty, { color: colores.textoSecundario }]}>Este cliente no tiene pedidos</Text>
         ) : (
           cliente.pedidos.map((p, i) => (
             <View key={i} style={s.pedido}>
-              <Feather name="shopping-bag" size={16} color="#3b82f6" />
-              <Text style={s.pedidoText}>{p}</Text>
+              <Feather name="shopping-bag" size={16} color={colores.btnPrimario} />
+              <Text style={[s.pedidoText, { color: colores.textoSecundario }]}>{p}</Text>
             </View>
           ))
         )}
       </View>
 
       <TouchableOpacity
-        style={s.editButton}
+        style={[s.editButton, { backgroundColor: colores.btnPrimario }]}
         onPress={() => {
-          setForm(toForm(cliente)); // ✅ asegura que abres con datos actuales
+          setForm(toForm(cliente));
           setEditarVisible(true);
         }}
       >
@@ -133,7 +139,7 @@ export default function ClienteDetallado() {
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={s.deleteButton}
+        style={[s.deleteButton, { backgroundColor: "#ef4444" }]}
         onPress={() => {
           Alert.alert("Eliminar Cliente", "Seguro que quieres eliminarlo", [
             { text: "Cancelar", style: "cancel" },
@@ -155,7 +161,7 @@ export default function ClienteDetallado() {
         visible={editarVisible}
         title="Editar cliente"
         value={form}
-        onChange={setForm} // ✅ ahora los inputs funcionan
+        onChange={setForm} 
         onCancel={() => setEditarVisible(false)}
         onSave={guardar}
       />
@@ -164,47 +170,47 @@ export default function ClienteDetallado() {
 }
 
 const s = StyleSheet.create({
-  container: { padding: 16, backgroundColor: "#f6f7fb" },
+  container: { flex: 1, paddingTop: 0 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  loadingText: { marginTop: 12, color: "#6B7280" },
-  error: { color: "red", fontSize: 16 },
+  loadingText: { marginTop: 12 },
+  error: { fontSize: 16 },
 
-  header: { alignItems: "center", marginBottom: 24, gap: 8 },
-  name: { fontSize: 22, fontWeight: "700", color: "#111827" },
+  header: { alignItems: "center", marginBottom: 24, gap: 8, paddingHorizontal: 16 },
+  name: { fontSize: 22, fontWeight: "700" },
 
   card: {
-    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
+    marginHorizontal: 16,
     elevation: 3,
   },
 
   row: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 },
-  value: { fontSize: 15, color: "#374151" },
+  value: { fontSize: 15 },
 
-  sectionTitle: { fontSize: 16, fontWeight: "700", color: "#111827", marginBottom: 8 },
+  sectionTitle: { fontSize: 16, fontWeight: "700", marginBottom: 8 },
   pedido: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 8 },
-  pedidoText: { fontSize: 14, color: "#374151" },
-  empty: { fontSize: 14, color: "#6B7280", textAlign: "center" },
+  pedidoText: { fontSize: 14 },
+  empty: { fontSize: 14, textAlign: "center" },
 
   editButton: {
-    backgroundColor: "#3b82f6",
     paddingVertical: 14,
     borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 12,
+    marginHorizontal: 16,
   },
   editText: { color: "#ffffff", fontWeight: "800", fontSize: 16 },
 
   deleteButton: {
-    backgroundColor: "#ef4444",
     paddingVertical: 14,
     borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
+    marginHorizontal: 16,
   },
   deleteText: { color: "#ffffff", fontWeight: "800", fontSize: 16 },
 });

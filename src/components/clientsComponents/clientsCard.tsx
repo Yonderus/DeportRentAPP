@@ -5,6 +5,8 @@ import { router, useFocusEffect } from "expo-router";
 
 import { Client } from "../../data/clients";
 import { getClients, addClient, updateClient } from "../../services/clientsService";
+import { useTemaStore } from "../../app/(tabs)/preferencias";
+import { obtenerColores } from "../../theme";
 
 import ClienteItem from "./clientsItem";
 import ClienteDialog, { ClientForm } from "./clientsDialog";
@@ -19,6 +21,8 @@ const crearClienteVacio = (): ClientForm => ({
 
 export default function ClientsCard() {
   const [clients, setClients] = useState<Client[]>([]);
+  const tema = useTemaStore((s) => s.tema);
+  const colores = obtenerColores(tema);
 
   // modal formulario (crear)
   const [formVisible, setFormVisible] = useState(false);
@@ -61,10 +65,10 @@ export default function ClientsCard() {
   };
 
   return (
-    <View style={s.page}>
+    <View style={[s.page, { backgroundColor: colores.fondoPrincipal }]}>
       <View style={s.header}>
-        <Text style={s.title}>Clientes</Text>
-        <Text style={s.subtitle}>Pulsa un cliente para ver detalles</Text>
+        <Text style={[s.title, { color: colores.textoPrincipal }]}>Clientes</Text>
+        <Text style={[s.subtitle, { color: colores.textoSecundario }]}>Pulsa un cliente para ver detalles</Text>
       </View>
 
       <FlatList
@@ -79,7 +83,7 @@ export default function ClientsCard() {
         )}
       />
 
-      <FAB icon="plus" style={s.fab} onPress={abrirCrear} />
+      <FAB icon="plus" style={[s.fab, { backgroundColor: colores.fabColor }]} onPress={abrirCrear} />
 
       <ClienteDialog
         visible={formVisible}
@@ -94,10 +98,10 @@ export default function ClientsCard() {
 }
 
 const s = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#f6f7fb" },
+  page: { flex: 1 },
   header: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 },
-  title: { fontSize: 26, fontWeight: "800", color: "#111827" },
-  subtitle: { fontSize: 15, color: "#6B7280", marginTop: 2 },
+  title: { fontSize: 26, fontWeight: "800" },
+  subtitle: { fontSize: 15, marginTop: 2 },
   list: { paddingHorizontal: 16, paddingBottom: 100 },
-  fab: { position: "absolute", right: 16, bottom: 16, backgroundColor: "#3b82f6" },
+  fab: { position: "absolute", right: 16, bottom: 16 },
 });

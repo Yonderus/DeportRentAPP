@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { TextInput } from "react-native-paper";
+import { useTemaStore } from "../app/(tabs)/preferencias";
+import { obtenerColores } from "../theme";
 
 interface Props {
   placeholder?: string;
@@ -14,6 +16,8 @@ const TextFieldLogin: React.FC<Props> = ({
   icon
 }) => {
   const [value, setValue] = useState("");
+  const tema = useTemaStore((s) => s.tema);
+  const colores = obtenerColores(tema);
 
   return (
       <TextInput
@@ -23,8 +27,10 @@ const TextFieldLogin: React.FC<Props> = ({
         value={value}
         onChangeText={setValue}
         left={icon ? <TextInput.Icon icon={() => icon} /> : undefined}
-        style={{ backgroundColor: "whitesmoke" }}
+        style={{ backgroundColor: colores.fondoInput }}
         outlineStyle={{ borderRadius: 10 }}
+        textColor={colores.textoPrincipal}
+        placeholderTextColor={colores.textoSecundario}
       />
   );
 };

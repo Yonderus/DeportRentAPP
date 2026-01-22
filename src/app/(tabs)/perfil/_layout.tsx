@@ -1,9 +1,9 @@
 import React from "react";
 import { Stack } from "expo-router";
-import { useTemaStore } from "../preferencias";
+import { useTemaStore } from "../preferencias/index";
 import { obtenerColores } from "../../../theme";
 
-export default function Layout() {
+export default function PerfilLayout() {
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
 
@@ -15,17 +15,18 @@ export default function Layout() {
         headerTitleStyle: { color: colores.textoPrincipal, fontWeight: "700" },
       }}
     >
-      <Stack.Screen 
-        name="index" 
-        options={{ 
+      <Stack.Screen
+        name="index"
+        options={{
+          title: "Perfil",
           headerShown: false,
-        }} 
+        }}
       />
-      <Stack.Screen 
-        name="[id]" 
-        options={{ 
-          headerShown: false,
-        }} 
+      <Stack.Screen
+        name="preferencias"
+        options={{
+          title: "Preferencias",
+        }}
       />
     </Stack>
   );

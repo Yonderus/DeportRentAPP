@@ -1,17 +1,18 @@
-import { StyleSheet, View, Text } from "react-native";
-import { GluestackUIProvider } from "@gluestack-ui/themed";
-import { PaperProvider } from "react-native-paper";
-import { config } from "@gluestack-ui/config";
+import React from "react";
+import { View } from "react-native";
+import { Text } from "react-native-paper";
+import { useTemaStore } from "./preferencias/index";
+import { obtenerColores } from "../../theme";
 
-export default function Index() {
+export default function InicioScreen() {
+  const tema = useTemaStore((s) => s.tema);
+  const colores = obtenerColores(tema);
+
   return (
-   <Text>Index Screen</Text>
+    <View style={{ flex: 1, backgroundColor: colores.fondoPrincipal }}>
+      <Text style={{ color: colores.textoPrincipal }}>
+        Página de Inicio
+      </Text>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "darkgrey",
-  },
-});

@@ -2,6 +2,8 @@ import React from "react";
 import { Modal, View, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { Button, Text } from "react-native-paper";
 import { Client } from "../../data/clients";
+import { useTemaStore } from "../../app/(tabs)/preferencias";
+import { obtenerColores } from "../../theme";
 
 type Props = {
   visible: boolean;
@@ -18,6 +20,9 @@ export default function ClienteActionsModal({
   onEdit,
   onDelete,
 }: Props) {
+  const tema = useTemaStore((s) => s.tema);
+  const colores = obtenerColores(tema);
+
   if (!client) return null;
 
   const confirmarBorrado = () => {
@@ -36,14 +41,14 @@ export default function ClienteActionsModal({
 
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
-      <TouchableOpacity style={s.backdrop} activeOpacity={1} onPress={onClose}>
-        <TouchableOpacity style={s.card} activeOpacity={1}>
-          <Text variant="titleMedium" style={s.title}>
+      <TouchableOpacity style={[s.backdrop, { backgroundColor: "rgba(0,0,0,0.5)" }]} activeOpacity={1} onPress={onClose}>
+        <TouchableOpacity style={[s.card, { backgroundColor: colores.fondoCard }]} activeOpacity={1}>
+          <Text variant="titleMedium" style={[s.title, { color: colores.textoPrincipal }]}>
             {client.name} {client.surname}
           </Text>
 
-          <Text style={s.line}>📞 {client.phone}</Text>
-          <Text style={s.line}>📧 {client.email || "-"}</Text>
+          <Text style={[s.line, { color: colores.textoSecundario }]}>📞 {client.phone}</Text>
+          <Text style={[s.line, { color: colores.textoSecundario }]}>📧 {client.email || "-"}</Text>
 
           <View style={s.row}>
             <Button mode="text" onPress={confirmarBorrado}>
@@ -70,12 +75,10 @@ export default function ClienteActionsModal({
 const s = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "center",
     padding: 16,
   },
   card: {
-    backgroundColor: "white",
     borderRadius: 16,
     padding: 16,
   },
@@ -85,7 +88,6 @@ const s = StyleSheet.create({
   },
   line: {
     marginTop: 6,
-    color: "#374151",
   },
   row: {
     marginTop: 14,

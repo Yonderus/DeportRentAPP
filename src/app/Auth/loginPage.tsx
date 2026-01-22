@@ -6,58 +6,68 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
 import TextFieldLogin from "../../components/textFieldLogin";
+import { useTemaStore } from "../(tabs)/preferencias";
+import { obtenerColores } from "../../theme";
 
 export default function LoginPage() {
+  const tema = useTemaStore((s) => s.tema);
+  const colores = obtenerColores(tema);
+
   return (
-    <Center style={styles.container}>
-      <Box style={styles.card}>
-        <Avatar.Icon size={80} icon="lock" color="#5c5cff" style={styles.avatar} />
+    <Center style={[styles.container, { backgroundColor: colores.fondoPrincipal }]}>
+      <Box style={[styles.card, { backgroundColor: colores.fondoCard, borderColor: colores.borde }]}>
+        <Avatar.Icon 
+          size={80} 
+          icon="lock" 
+          color={colores.avatarIcono} 
+          style={[styles.avatar, { backgroundColor: colores.avatarFondo }]} 
+        />
 
         <Box style={styles.header}>
-          <Text style={styles.title}>Bienvenido</Text>
-          <Text style={styles.subtitle}>Introduce tus credenciales para continuar</Text>
+          <Text style={[styles.title, { color: colores.textoPrincipal }]}>Bienvenido</Text>
+          <Text style={[styles.subtitle, { color: colores.textoSecundario }]}>Introduce tus credenciales para continuar</Text>
         </Box>
 
         <Box style={styles.section}>
-          <Text style={styles.label}>Correo electrónico</Text>
+          <Text style={[styles.label, { color: colores.textoPrincipal }]}>Correo electrónico</Text>
           <TextFieldLogin
             placeholder="nombre@ejemplo.com"
-            icon={<Feather name="mail" size={20} color="#4B5563" />}
+            icon={<Feather name="mail" size={20} color={colores.iconoColorGris} />}
           />
         </Box>
 
         <Box style={styles.section}>
           <Box style={styles.rowBetween}>
-            <Text style={styles.label}>Contraseña</Text>
+            <Text style={[styles.label, { color: colores.textoPrincipal }]}>Contraseña</Text>
             <Pressable>
-              <Text style={styles.link}>Olvidaste tu contraseña</Text>
+              <Text style={[styles.link, { color: colores.enlaces }]}>Olvidaste tu contraseña</Text>
             </Pressable>
           </Box>
 
           <TextFieldLogin
-            icon={<Feather name="lock" size={20} color="#4B5563" />}
+            icon={<Feather name="lock" size={20} color={colores.iconoColorGris} />}
             placeholder="********"
             secure
           />
         </Box>
 
-        <Button style={styles.primaryBtn} onPress={() => router.replace("(tabs)")}>
+        <Button style={[styles.primaryBtn, { backgroundColor: colores.btnPrimario }]} onPress={() => router.replace("(tabs)")}>
           <ButtonText style={styles.primaryText}>Iniciar sesión</ButtonText>
         </Button>
 
-        <Text style={styles.centerText}>O continúa con</Text>
+        <Text style={[styles.centerText, { color: colores.textoSecundario }]}>O continúa con</Text>
 
-        <Button style={styles.googleBtn}>
+        <Button style={[styles.googleBtn, { backgroundColor: colores.btnGoogleFondo, borderColor: colores.borde }]}>
           <Box style={styles.googleRow}>
             <MaterialCommunityIcons name="google" size={20} color="black" />
-            <ButtonText style={styles.googleText}>Google</ButtonText>
+            <ButtonText style={[styles.googleText, { color: colores.btnGoogleTexto }]}>Google</ButtonText>
           </Box>
         </Button>
 
         <Box style={styles.footer}>
-          <Text style={styles.centerText}>No tienes una cuenta</Text>
+          <Text style={[styles.centerText, { color: colores.textoSecundario }]}>No tienes una cuenta</Text>
           <Pressable>
-            <Text style={styles.linkCenter}>Regístrate ahora</Text>
+            <Text style={[styles.linkCenter, { color: colores.enlaces }]}>Regístrate ahora</Text>
           </Pressable>
         </Box>
       </Box>

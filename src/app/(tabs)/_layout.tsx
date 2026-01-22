@@ -2,11 +2,23 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Tabs } from "expo-router";
 import { PaperProvider } from "react-native-paper";
+import { useTemaStore } from "./preferencias/index";
+import { obtenerColores } from "../../theme";
 
 export default function TabLayout() {
+  const tema = useTemaStore((s) => s.tema);
+  const colores = obtenerColores(tema);
+
   return (
     <PaperProvider>
-      <Tabs screenOptions={{ tabBarActiveTintColor: "blue" }}>
+      <Tabs screenOptions={{ 
+        tabBarActiveTintColor: colores.btnPrimario,
+        tabBarInactiveTintColor: colores.textoSecundario,
+        tabBarStyle: { backgroundColor: colores.fondoCard, borderTopColor: colores.borde },
+        headerStyle: { backgroundColor: colores.fondoCard, borderBottomColor: colores.borde },
+        headerTintColor: colores.textoPrincipal,
+        headerTitleStyle: { color: colores.textoPrincipal },
+      }}>
         <Tabs.Screen
           name="index"
           options={{
@@ -36,15 +48,20 @@ export default function TabLayout() {
           }}
         />
 
-        
+        <Tabs.Screen
+          name="perfil"
+          options={{
+            title: "Perfil",
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="account" color={color} size={size} />
+            ),
+          }}
+        />
 
         <Tabs.Screen
-          name="inventario"
+          name="preferencias"
           options={{
-            title: "Inventario",
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="warehouse" color={color} size={size} />
-            ),
+            href: null,
           }}
         />
       </Tabs>
