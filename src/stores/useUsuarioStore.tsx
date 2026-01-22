@@ -13,7 +13,7 @@ type UsuarioState = {
 
 export const useUsuarioStore = create<UsuarioState>((set) => ({
   id: "1",
-  email: "admin@demo.com",
+  email: "admin@admin.com",
   nombreVisible: "Admin",
   rol: "ADMIN",
 

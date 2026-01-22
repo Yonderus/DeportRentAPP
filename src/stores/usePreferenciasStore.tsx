@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export type TemaApp = "claro" | "oscuro" | "sistema";
+export type TemaApp = "claro" | "oscuro";
 
 type PreferenciasState = {
   tema: TemaApp;
@@ -12,7 +12,7 @@ type PreferenciasState = {
 export const usePreferenciasStore = create<PreferenciasState>()(
   persist(
     (set) => ({
-      tema: "sistema",
+      tema: "claro",
       setTema: (t) => set({ tema: t }),
     }),
     {
