@@ -97,7 +97,7 @@ export default function ClienteDialog({
 
                 <TextInput
                   mode="outlined"
-                  placeholder="Email (opcional)"
+                  placeholder="Email"
                   value={value.email}
                   onChangeText={(t) => onChange({ ...value, email: t })}
                   style={[s.input, { backgroundColor: colores.fondoInput }]}

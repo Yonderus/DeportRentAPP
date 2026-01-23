@@ -32,7 +32,7 @@ export interface Cliente {
   nombre: string;
   nifCif?: string;
   telefono?: string;
-  email?: string;
+  email: string;
   notas?: string;
   activo: boolean;
 }

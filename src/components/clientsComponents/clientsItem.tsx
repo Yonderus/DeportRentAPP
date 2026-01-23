@@ -62,6 +62,7 @@ const s = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     elevation: 3,
   },
+  
   pressed: { opacity: 0.85 },
   avatar: { marginRight: 12 },
   avatarText: { fontWeight: "800", color: "white" },

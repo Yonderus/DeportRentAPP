@@ -36,7 +36,6 @@ export default function ClienteDetallado() {
   const [cargando, setCargando] = useState(true);
   const [editarVisible, setEditarVisible] = useState(false);
 
-  // ✅ estado del formulario (para que los inputs puedan cambiar)
   const [form, setForm] = useState<ClientForm>({
     nombre: "",
     nifCif: "",
@@ -50,7 +49,7 @@ export default function ClienteDetallado() {
     setCargando(true);
     const c = getClientById(clientId);
     setCliente(c ?? null);
-    if (c) setForm(toForm(c)); // ✅ rellena el form con el cliente actual
+    if (c) setForm(toForm(c)); 
     setCargando(false);
   };
 

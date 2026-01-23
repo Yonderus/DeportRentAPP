@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { StyleSheet, Alert, TouchableWithoutFeedback, Keyboard } from "react-native";
-import { Box, Button, ButtonText, Text, Pressable, Center } from "@gluestack-ui/themed";
+import { StyleSheet, Alert, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform } from "react-native";
+import { Box, Button, ButtonText, Text, Pressable } from "@gluestack-ui/themed";
 import { Avatar } from "react-native-paper";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -36,9 +36,13 @@ export default function LoginPage() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <Center style={[styles.container, { backgroundColor: colores.fondoPrincipal }]}>
-        <Box style={[styles.card, { backgroundColor: colores.fondoCard, borderColor: colores.borde }]}>
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={[styles.container, { backgroundColor: colores.fondoPrincipal }]}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <Box style={styles.innerContainer}>
+          <Box style={[styles.card, { backgroundColor: colores.fondoCard, borderColor: colores.borde }]}>
           <Avatar.Icon 
             size={80} 
             icon="lock" 
@@ -104,16 +108,23 @@ export default function LoginPage() {
           </Pressable>
         </Box>
       </Box>
-      </Center>
-    </TouchableWithoutFeedback>
+        </Box>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
     backgroundColor: "#f6f7fb",
+  },
+
+  innerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
   },
 
   card: {
