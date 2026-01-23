@@ -1,13 +1,29 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { PaperProvider } from "react-native-paper";
+import { useEffect } from "react";
 import { useTemaStore } from "./preferencias/index";
+import { useUsuarioStore } from "../../stores/useUsuarioStore";
+import { useAuth } from "../../context/AuthContext";
 import { obtenerColores } from "../../theme";
 
 export default function TabLayout() {
   const tema = useTemaStore((s) => s.tema);
+  const isLoggedIn = useUsuarioStore((s) => s.isLoggedIn);
+  const { isLoading } = useAuth();
+  const router = useRouter();
   const colores = obtenerColores(tema);
+
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn) {
+      router.replace("/Auth/loginPage");
+    }
+  }, [isLoggedIn, isLoading]);
+
+  if (isLoading || !isLoggedIn) {
+    return null;
+  }
 
   return (
     <PaperProvider>

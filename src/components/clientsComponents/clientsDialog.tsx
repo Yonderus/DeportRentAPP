@@ -10,11 +10,11 @@ import {
   Keyboard,
 } from "react-native";
 import { Button, TextInput, Text } from "react-native-paper";
-import { Client } from "../../data/clients";
+import { Cliente } from "../../app/types/types";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
 import { obtenerColores } from "../../theme";
 
-export type ClientForm = Omit<Client, "id">;
+export type ClientForm = Omit<Cliente, "id">;
 
 type Props = {
   visible: boolean;
@@ -39,11 +39,9 @@ export default function ClienteDialog({
   const colores = obtenerColores(tema);
 
   const aceptar = () => {
-    if (!value.name.trim()) return;
-    if (!value.surname.trim()) return;
-    if (!value.phone.trim()) return;
+    if (!value.nombre.trim()) return;
 
-    onSave({ ...value, pedidos: value.pedidos ?? [] });
+    onSave(value);
   };
 
   return (
@@ -63,8 +61,8 @@ export default function ClienteDialog({
                 <TextInput
                   mode="outlined"
                   placeholder="Nombre"
-                  value={value.name}
-                  onChangeText={(t) => onChange({ ...value, name: t })}
+                  value={value.nombre}
+                  onChangeText={(t) => onChange({ ...value, nombre: t })}
                   style={[s.input, { backgroundColor: colores.fondoInput }]}
                   outlineStyle={{ borderRadius: RADIUS }}
                   left={<TextInput.Icon icon="account" />}
@@ -74,21 +72,21 @@ export default function ClienteDialog({
 
                 <TextInput
                   mode="outlined"
-                  placeholder="Apellidos"
-                  value={value.surname}
-                  onChangeText={(t) => onChange({ ...value, surname: t })}
+                  placeholder="NIF/CIF (opcional)"
+                  value={value.nifCif}
+                  onChangeText={(t) => onChange({ ...value, nifCif: t })}
                   style={[s.input, { backgroundColor: colores.fondoInput }]}
                   outlineStyle={{ borderRadius: RADIUS }}
-                  left={<TextInput.Icon icon="account-details" />}
+                  left={<TextInput.Icon icon="card-account-details" />}
                   textColor={colores.textoPrincipal}
                   placeholderTextColor={colores.textoSecundario}
                 />
 
                 <TextInput
                   mode="outlined"
-                  placeholder="Teléfono"
-                  value={value.phone}
-                  onChangeText={(t) => onChange({ ...value, phone: t })}
+                  placeholder="Teléfono (opcional)"
+                  value={value.telefono}
+                  onChangeText={(t) => onChange({ ...value, telefono: t })}
                   style={[s.input, { backgroundColor: colores.fondoInput }]}
                   outlineStyle={{ borderRadius: RADIUS }}
                   left={<TextInput.Icon icon="phone" />}
@@ -99,7 +97,7 @@ export default function ClienteDialog({
 
                 <TextInput
                   mode="outlined"
-                  placeholder="Email"
+                  placeholder="Email (opcional)"
                   value={value.email}
                   onChangeText={(t) => onChange({ ...value, email: t })}
                   style={[s.input, { backgroundColor: colores.fondoInput }]}

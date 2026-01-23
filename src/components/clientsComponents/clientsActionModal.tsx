@@ -1,15 +1,15 @@
 import React from "react";
 import { Modal, View, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { Button, Text } from "react-native-paper";
-import { Client } from "../../data/clients";
+import { Cliente } from "../../app/types/types";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
 import { obtenerColores } from "../../theme";
 
 type Props = {
   visible: boolean;
-  client: Client | null;
+  client: Cliente | null;
   onClose: () => void;
-  onEdit: (client: Client) => void;
+  onEdit: (client: Cliente) => void;
   onDelete: (id: number) => void;
 };
 
@@ -44,10 +44,10 @@ export default function ClienteActionsModal({
       <TouchableOpacity style={[s.backdrop, { backgroundColor: "rgba(0,0,0,0.5)" }]} activeOpacity={1} onPress={onClose}>
         <TouchableOpacity style={[s.card, { backgroundColor: colores.fondoCard }]} activeOpacity={1}>
           <Text variant="titleMedium" style={[s.title, { color: colores.textoPrincipal }]}>
-            {client.name} {client.surname}
+            {client.nombre} {client.email}
           </Text>
 
-          <Text style={[s.line, { color: colores.textoSecundario }]}>📞 {client.phone}</Text>
+          <Text style={[s.line, { color: colores.textoSecundario }]}>📞 {client.telefono}</Text>
           <Text style={[s.line, { color: colores.textoSecundario }]}>📧 {client.email || "-"}</Text>
 
           <View style={s.row}>

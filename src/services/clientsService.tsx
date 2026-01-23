@@ -1,26 +1,25 @@
-import { Client, clientsData } from "../data/clients";
+import { Cliente, clientes } from "../app/types/types";
 
-let clientesData: Client[] = [...clientsData];
+let clientesData: Cliente[] = [...clientes];
 
-export const getClients = (): Client[] => {
+export const getClients = (): Cliente[] => {
   return [...clientesData];
 };
 
-export const getClientById = (id: number): Client | undefined => {
+export const getClientById = (id: number): Cliente | undefined => {
   return clientesData.find((c) => c.id === id);
 };
 
 
-export const addClient = (client: Omit<Client, "id">): Client => {
+export const addClient = (client: Omit<Cliente, "id">): Cliente => {
   const newId =
     clientesData.length > 0
       ? Math.max(...clientesData.map((c) => c.id)) + 1
       : 1;
 
-  const nuevo: Client = {
+  const nuevo: Cliente = {
     ...client,
     id: newId,
-    pedidos: client.pedidos ?? [],
   };
 
   clientesData.push(nuevo);
@@ -30,16 +29,15 @@ export const addClient = (client: Omit<Client, "id">): Client => {
 
 export const updateClient = (
   id: number,
-  cambios: Partial<Omit<Client, "id">>
-): Client | undefined => {
+  cambios: Partial<Omit<Cliente, "id">>
+): Cliente | undefined => {
   const actual = clientesData.find((c) => c.id === id);
   if (!actual) return undefined;
 
-  const actualizado: Client = {
+  const actualizado: Cliente = {
     ...actual,
     ...cambios,
     id,
-    pedidos: cambios.pedidos ?? actual.pedidos,
   };
 
   clientesData = clientesData.map((c) =>

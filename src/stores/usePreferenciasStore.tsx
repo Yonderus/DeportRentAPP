@@ -16,7 +16,7 @@ export const usePreferenciasStore = create<PreferenciasState>()(
       setTema: (t) => set({ tema: t }),
     }),
     {
-      name: "PREFERENCIAS_V1",
+      name: "PreferenciasStore",
       storage: createJSONStorage(() => AsyncStorage),
     }
   )
