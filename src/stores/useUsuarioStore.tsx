@@ -13,6 +13,8 @@ type UsuarioState = {
 
   login: (usuario: User) => Promise<void>;
   setNombreVisible: (nombre: string) => Promise<void>;
+  setEmail: (email: string) => Promise<void>;
+  updatePerfil: (data: { nombreVisible?: string; email?: string }) => Promise<void>;
   logout: () => Promise<void>;
   loadFromStorage: () => Promise<void>;
 };
@@ -41,6 +43,24 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
   setNombreVisible: async (nombre) => {
     const currentState = get();
     const updatedState = { ...currentState, nombreVisible: nombre };
+    set(updatedState);
+    await AsyncStorage.setItem("usuario-data", JSON.stringify(updatedState));
+  },
+
+  setEmail: async (email) => {
+    const currentState = get();
+    const updatedState = { ...currentState, email };
+    set(updatedState);
+    await AsyncStorage.setItem("usuario-data", JSON.stringify(updatedState));
+  },
+
+  updatePerfil: async (data) => {
+    const currentState = get();
+    const updatedState = {
+      ...currentState,
+      ...(data.nombreVisible !== undefined ? { nombreVisible: data.nombreVisible } : {}),
+      ...(data.email !== undefined ? { email: data.email } : {}),
+    };
     set(updatedState);
     await AsyncStorage.setItem("usuario-data", JSON.stringify(updatedState));
   },
