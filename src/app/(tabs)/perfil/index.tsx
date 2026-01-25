@@ -153,6 +153,25 @@ export default function PerfilScreen() {
         </Card.Content>
       </Card>
 
+      {editando ? (
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <Button
+            mode="contained"
+            onPress={handleGuardar}
+            style={{ flex: 1, backgroundColor: colores.btnPrimario }}
+          >
+            Guardar
+          </Button>
+          <Button
+            mode="outlined"
+            onPress={handleCancelar}
+            style={{ flex: 1 }}
+          >
+            Cancelar
+          </Button>
+        </View>
+      ) : null}
+
       <Card style={{ backgroundColor: colores.fondoCard }}>
         <Card.Content style={{ gap: 12 }}>
           <Text variant="titleMedium" style={{ fontWeight: "700", color: colores.textoPrincipal }}>
@@ -236,25 +255,6 @@ export default function PerfilScreen() {
           />
         </Card.Content>
       </Card>
-
-      {editando ? (
-        <View style={{ flexDirection: "row", gap: 8 }}>
-          <Button
-            mode="contained"
-            onPress={handleGuardar}
-            style={{ flex: 1, backgroundColor: colores.btnPrimario }}
-          >
-            Guardar
-          </Button>
-          <Button
-            mode="outlined"
-            onPress={handleCancelar}
-            style={{ flex: 1 }}
-          >
-            Cancelar
-          </Button>
-        </View>
-      ) : null}
 
       <Button
         mode="contained"
