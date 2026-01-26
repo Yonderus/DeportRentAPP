@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, View, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { Button, Text } from "react-native-paper";
-import { Cliente } from "../../app/types/types";
+import { Cliente } from "../../types/types";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
 import { obtenerColores } from "../../theme";
 

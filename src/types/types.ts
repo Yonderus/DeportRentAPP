@@ -552,4 +552,3 @@ export const updateEstadoPedido = async (
 
   return buildPedidoConDetalle(pedidos[pedidoIndex]);
 };
-

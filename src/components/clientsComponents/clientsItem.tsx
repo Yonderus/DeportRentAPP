@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, View, Text, StyleSheet } from "react-native";
 import { Avatar } from "react-native-paper";
-import { Cliente } from "../../app/types/types";
+import { Cliente } from "../../types/types";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
 import { obtenerColores } from "../../theme";
 

@@ -1,4 +1,4 @@
-import { usuarios, User } from "../app/types/types";
+import { usuarios, User } from "../types/types";
 
 export interface LoginResult {
   success: boolean;

@@ -1,4 +1,4 @@
-import { Cliente, clientes } from "../app/types/types";
+import { Cliente, clientes } from "../types/types";
 
 let clientesData: Cliente[] = [...clientes];
 

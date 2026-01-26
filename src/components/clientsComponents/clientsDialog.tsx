@@ -10,7 +10,7 @@ import {
   Keyboard,
 } from "react-native";
 import { Button, TextInput, Text } from "react-native-paper";
-import { Cliente } from "../../app/types/types";
+import { Cliente } from "../../types/types";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
 import { obtenerColores } from "../../theme";
 

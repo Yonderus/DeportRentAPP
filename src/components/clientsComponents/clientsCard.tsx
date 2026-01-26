@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList } from "react-native";
 import { FAB } from "react-native-paper";
 import { router, useFocusEffect } from "expo-router";
 
-import { Cliente } from "../../app/types/types";
+import { Cliente } from "../../types/types";
 import { getClients, addClient, updateClient } from "../../services/clientsService";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
 import { obtenerColores } from "../../theme";

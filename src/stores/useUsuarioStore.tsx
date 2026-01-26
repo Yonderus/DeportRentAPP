@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { User, roles } from "../app/types/types";
+import { User, roles } from "../types/types";
 
 type RoleName = "NORMAL" | "ADMIN";
 

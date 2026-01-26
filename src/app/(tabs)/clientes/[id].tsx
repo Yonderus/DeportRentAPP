@@ -11,7 +11,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 
-import { Cliente } from "../../../app/types/types";
+import { Cliente } from "../../../types/types";
 import { getClientById, updateClient, deleteClient } from "../../../services/clientsService";
 import ClienteDialog, { ClientForm } from "../../../components/clientsComponents/clientsDialog";
 import { useTemaStore } from "../preferencias";
