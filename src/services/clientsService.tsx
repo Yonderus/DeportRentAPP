@@ -1,53 +1,66 @@
-import { Cliente, clientes } from "../types/types";
+import { supabase } from "../lib/supabaseClient";
+import { Cliente } from "../types/types";
 
-let clientesData: Cliente[] = [...clientes];
+const toDb = (client: Partial<Omit<Cliente, "id">>) => ({
+  nombre: client.nombre,
+  telefono: client.telefono,
+  email: client.email,
+  nif_cif: client.nifCif,
+  notas: client.notas,
+  activo: client.activo,
+});
 
-export const getClients = (): Cliente[] => {
-  return [...clientesData];
+export const getClients = async (): Promise<Cliente[]> => {
+  const { data, error } = await supabase
+    .from("clientes")
+    .select("id,nombre,telefono,email,nifCif:nif_cif,notas,activo")
+    .order("id", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return data ?? [];
 };
 
-export const getClientById = (id: number): Cliente | undefined => {
-  return clientesData.find((c) => c.id === id);
+export const getClientById = async (id: number): Promise<Cliente | null> => {
+  const { data, error } = await supabase
+    .from("clientes")
+    .select("id,nombre,telefono,email,nifCif:nif_cif,notas,activo")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") return null;
+    throw new Error(error.message);
+  }
+  return data ?? null;
 };
 
+export const addClient = async (client: Omit<Cliente, "id">): Promise<Cliente> => {
+  const { data, error } = await supabase
+    .from("clientes")
+    .insert(toDb(client))
+    .select("id,nombre,telefono,email,nifCif:nif_cif,notas,activo")
+    .single();
 
-export const addClient = (client: Omit<Cliente, "id">): Cliente => {
-  const newId =
-    clientesData.length > 0
-      ? Math.max(...clientesData.map((c) => c.id)) + 1
-      : 1;
-
-  const nuevo: Cliente = {
-    ...client,
-    id: newId,
-  };
-
-  clientesData.push(nuevo);
-  return nuevo;
+  if (error) throw new Error(error.message);
+  return data as Cliente;
 };
 
-
-export const updateClient = (
+export const updateClient = async (
   id: number,
   cambios: Partial<Omit<Cliente, "id">>
-): Cliente | undefined => {
-  const actual = clientesData.find((c) => c.id === id);
-  if (!actual) return undefined;
+): Promise<Cliente> => {
+  const { data, error } = await supabase
+    .from("clientes")
+    .update(toDb(cambios))
+    .eq("id", id)
+    .select("id,nombre,telefono,email,nifCif:nif_cif,notas,activo")
+    .single();
 
-  const actualizado: Cliente = {
-    ...actual,
-    ...cambios,
-    id,
-  };
-
-  clientesData = clientesData.map((c) =>
-    c.id === id ? actualizado : c
-  );
-
-  return actualizado;
+  if (error) throw new Error(error.message);
+  return data as Cliente;
 };
 
-
-export const deleteClient = (id: number): void => {
-  clientesData = clientesData.filter((c) => c.id !== id);
+export const deleteClient = async (id: number): Promise<void> => {
+  const { error } = await supabase.from("clientes").delete().eq("id", id);
+  if (error) throw new Error(error.message);
 };

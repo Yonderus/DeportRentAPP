@@ -30,6 +30,10 @@
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "supabaseUrl": "https://njrxauhmcbzxhtrimxsf.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qcnhhdWhtY2J6eGh0cmlteHNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0NDE4NzEsImV4cCI6MjA4NTAxNzg3MX0.m3lBGOgZSKvIclhjq3wzFCzz3ePEHXyT-Y2EhCyraeQ"
+    }
   }
 }

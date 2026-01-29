@@ -1,7 +1,8 @@
-import React, { useCallback, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { View, Text, StyleSheet, FlatList } from "react-native";
 import { FAB } from "react-native-paper";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Cliente } from "../../types/types";
 import { getClients, addClient, updateClient } from "../../services/clientsService";
@@ -21,23 +22,35 @@ const crearClienteVacio = (): ClientForm => ({
 });
 
 export default function ClientsCard() {
-  const [clients, setClients] = useState<Cliente[]>([]);
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
+  const queryClient = useQueryClient();
 
   // modal formulario (crear)
   const [formVisible, setFormVisible] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<ClientForm>(crearClienteVacio());
 
-  const cargar = () => setClients(getClients());
+  const {
+    data: clients = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["clientes"],
+    queryFn: getClients,
+  });
 
-  // se ejecuta cada vez que esta pantalla vuelve a estar activa
-  useFocusEffect(
-    useCallback(() => {
-      cargar();
-    }, [])
-  );
+  const createMutation = useMutation({
+    mutationFn: addClient,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["clientes"] }),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<Omit<Cliente, "id">> }) =>
+      updateClient(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["clientes"] }),
+  });
 
   const abrirCrear = () => {
     setEditingId(null);
@@ -58,13 +71,19 @@ export default function ClientsCard() {
     setFormVisible(true);
   };
 
-  const guardar = (data: ClientForm) => {
-    if (editingId === null) addClient(data);
-    else updateClient(editingId, data);
+  const guardar = async (data: ClientForm) => {
+    if (editingId === null) await createMutation.mutateAsync(data);
+    else await updateMutation.mutateAsync({ id: editingId, data });
 
     setFormVisible(false);
-    cargar();
   };
+
+  const statusMessage = useMemo(() => {
+    if (isLoading) return "Cargando clientes...";
+    if (isError) return (error as Error)?.message ?? "Error al cargar clientes";
+    if (clients.length === 0) return "No hay clientes aún";
+    return null;
+  }, [isLoading, isError, error, clients.length]);
 
   return (
     <View style={[s.page, { backgroundColor: colores.fondoPrincipal }]}>
@@ -73,19 +92,30 @@ export default function ClientsCard() {
         <Text style={[s.subtitle, { color: colores.textoSecundario }]}>Pulsa un cliente para ver detalles</Text>
       </View>
 
-      <FlatList
-        data={clients}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={s.list}
-        renderItem={({ item }) => (
-          <ClienteItem
-            client={item}
-            onPress={() => router.push(`/(tabs)/clientes/${item.id}`)}
-          />
-        )}
-      />
+      {statusMessage ? (
+        <View style={s.emptyState}>
+          <Text style={[s.emptyText, { color: colores.textoSecundario }]}>{statusMessage}</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={clients}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={s.list}
+          renderItem={({ item }) => (
+            <ClienteItem
+              client={item}
+              onPress={() => router.push(`/(tabs)/clientes/${item.id}`)}
+            />
+          )}
+        />
+      )}
 
-      <FAB icon="plus" style={[s.fab, { backgroundColor: colores.fabColor }]} onPress={abrirCrear} />
+      <FAB
+        icon="plus"
+        style={[s.fab, { backgroundColor: colores.fabColor }]}
+        onPress={abrirCrear}
+        disabled={createMutation.isPending || updateMutation.isPending}
+      />
 
       <ClienteDialog
         visible={formVisible}
@@ -105,5 +135,7 @@ const s = StyleSheet.create({
   title: { fontSize: 26, fontWeight: "800" },
   subtitle: { fontSize: 15, marginTop: 2 },
   list: { paddingHorizontal: 16, paddingBottom: 100 },
+  emptyState: { paddingHorizontal: 16, paddingVertical: 24 },
+  emptyText: { fontSize: 14 },
   fab: { position: "absolute", right: 16, bottom: 16 },
 });

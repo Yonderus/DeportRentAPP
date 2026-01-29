@@ -8,31 +8,31 @@ import { router } from "expo-router";
 import TextFieldLogin from "../../components/textFieldLogin";
 import { useTemaStore } from "../(tabs)/preferencias";
 import { obtenerColores } from "../../theme";
-import { useUsuarioStore } from "../../stores/useUsuarioStore";
-import { validarLogin } from "../../services/authService";
+import { useMutation } from "@tanstack/react-query";
+import { loginWithPassword } from "../../services/authService";
 
 export default function LoginPage() {
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
-  const { login } = useUsuarioStore();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+
+  const loginMutation = useMutation({
+    mutationFn: () => loginWithPassword(email, password),
+    onSuccess: (resultado) => {
+      if (resultado.success) {
+        router.replace("(tabs)");
+      } else {
+        Alert.alert("Error de inicio de sesión", resultado.message);
+      }
+    },
+    onError: (error: any) => {
+      Alert.alert("Error de inicio de sesión", error?.message ?? "Error desconocido");
+    },
+  });
 
   const handleLogin = async () => {
-    setLoading(true);
-
-    const resultado = validarLogin(email, password);
-
-    if (resultado.success && resultado.usuario) {
-      await login(resultado.usuario);
-      router.replace("(tabs)");
-    } else {
-      Alert.alert("Error de inicio de sesión", resultado.message);
-    }
-
-    setLoading(false);
+    loginMutation.mutate();
   };
 
   return (
@@ -85,10 +85,10 @@ export default function LoginPage() {
         <Button 
           style={[styles.primaryBtn, { backgroundColor: colores.btnPrimario }]} 
           onPress={handleLogin}
-          disabled={loading}
+          disabled={loginMutation.isPending}
         >
           <ButtonText style={styles.primaryText}>
-            {loading ? "Iniciando..." : "Iniciar sesión"}
+            {loginMutation.isPending ? "Iniciando..." : "Iniciar sesión"}
           </ButtonText>
         </Button>
 

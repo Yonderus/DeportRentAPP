@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
 import { useUsuarioStore } from "../stores/useUsuarioStore";
 
 interface AuthContextType {
@@ -10,15 +11,31 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isLoggedIn = useUsuarioStore((state) => state.isLoggedIn);
-  const loadFromStorage = useUsuarioStore((state) => state.loadFromStorage);
+  const setFromSession = useUsuarioStore((state) => state.setFromSession);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const load = async () => {
-      await loadFromStorage();
+    let mounted = true;
+
+    const init = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!mounted) return;
+      await setFromSession(data.session);
       setIsLoading(false);
     };
-    load();
+
+    init();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        await setFromSession(session);
+      }
+    );
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   return (
