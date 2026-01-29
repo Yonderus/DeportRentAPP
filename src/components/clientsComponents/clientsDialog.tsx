@@ -23,6 +23,7 @@ type Props = {
   onChange: (v: ClientForm) => void;
   onCancel: () => void;
   onSave: (v: ClientForm) => void;
+  saving?: boolean;
 };
 
 const RADIUS = 16;
@@ -34,11 +35,13 @@ export default function ClienteDialog({
   onChange,
   onCancel,
   onSave,
+  saving = false,
 }: Props) {
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
 
   const aceptar = () => {
+    if (saving) return;
     if (!value.nombre.trim()) return;
 
     onSave(value);
@@ -111,10 +114,10 @@ export default function ClienteDialog({
               </ScrollView>
 
               <View style={s.row}>
-                <Button onPress={onCancel} mode="text">
+                <Button onPress={onCancel} mode="text" disabled={saving}>
                   Cancelar
                 </Button>
-                <Button onPress={aceptar} mode="contained">
+                <Button onPress={aceptar} mode="contained" loading={saving} disabled={saving}>
                   Guardar
                 </Button>
               </View>

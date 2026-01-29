@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { ActivityIndicator, View, Text, StyleSheet, FlatList } from "react-native";
 import { FAB } from "react-native-paper";
 import { router } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -43,13 +43,41 @@ export default function ClientsCard() {
 
   const createMutation = useMutation({
     mutationFn: addClient,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["clientes"] }),
+    onMutate: async (newClient) => {
+      await queryClient.cancelQueries({ queryKey: ["clientes"] });
+      const previous = queryClient.getQueryData<Cliente[]>(["clientes"]) ?? [];
+      const optimistic: Cliente = {
+        id: -Date.now(),
+        ...newClient,
+      } as Cliente;
+      queryClient.setQueryData<Cliente[]>(["clientes"], [optimistic, ...previous]);
+      return { previous };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["clientes"], context.previous);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["clientes"] }),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<Omit<Cliente, "id">> }) =>
       updateClient(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["clientes"] }),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ["clientes"] });
+      const previous = queryClient.getQueryData<Cliente[]>(["clientes"]) ?? [];
+      queryClient.setQueryData<Cliente[]>(["clientes"],
+        previous.map((c) => (c.id === id ? { ...c, ...data } : c))
+      );
+      return { previous };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["clientes"], context.previous);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["clientes"] }),
   });
 
   const abrirCrear = () => {
@@ -79,7 +107,7 @@ export default function ClientsCard() {
   };
 
   const statusMessage = useMemo(() => {
-    if (isLoading) return "Cargando clientes...";
+    if (isLoading) return "";
     if (isError) return (error as Error)?.message ?? "Error al cargar clientes";
     if (clients.length === 0) return "No hay clientes aún";
     return null;
@@ -92,7 +120,12 @@ export default function ClientsCard() {
         <Text style={[s.subtitle, { color: colores.textoSecundario }]}>Pulsa un cliente para ver detalles</Text>
       </View>
 
-      {statusMessage ? (
+      {isLoading ? (
+        <View style={s.loadingState}>
+          <ActivityIndicator size="large" color={colores.btnPrimario} />
+          <Text style={[s.emptyText, { color: colores.textoSecundario }]}>Cargando clientes...</Text>
+        </View>
+      ) : statusMessage ? (
         <View style={s.emptyState}>
           <Text style={[s.emptyText, { color: colores.textoSecundario }]}>{statusMessage}</Text>
         </View>
@@ -124,6 +157,7 @@ export default function ClientsCard() {
         onChange={setForm}
         onCancel={() => setFormVisible(false)}
         onSave={guardar}
+        saving={createMutation.isPending || updateMutation.isPending}
       />
     </View>
   );
@@ -135,6 +169,7 @@ const s = StyleSheet.create({
   title: { fontSize: 26, fontWeight: "800" },
   subtitle: { fontSize: 15, marginTop: 2 },
   list: { paddingHorizontal: 16, paddingBottom: 100 },
+  loadingState: { paddingHorizontal: 16, paddingVertical: 24, alignItems: "center", gap: 12 },
   emptyState: { paddingHorizontal: 16, paddingVertical: 24 },
   emptyText: { fontSize: 14 },
   fab: { position: "absolute", right: 16, bottom: 16 },

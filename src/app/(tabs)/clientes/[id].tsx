@@ -58,6 +58,40 @@ export default function ClienteDetallado() {
 
   const updateMutation = useMutation({
     mutationFn: (data: ClientForm) => updateClient(clientId, data),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ["clientes", clientId] });
+      await queryClient.cancelQueries({ queryKey: ["clientes"] });
+
+      const previousDetail = queryClient.getQueryData<Cliente | null>([
+        "clientes",
+        clientId,
+      ]);
+      const previousList = queryClient.getQueryData<Cliente[]>(["clientes"]);
+
+      if (previousDetail) {
+        queryClient.setQueryData<Cliente | null>(["clientes", clientId], {
+          ...previousDetail,
+          ...data,
+        });
+      }
+
+      if (previousList) {
+        queryClient.setQueryData<Cliente[]>(
+          ["clientes"],
+          previousList.map((c) => (c.id === clientId ? { ...c, ...data } : c))
+        );
+      }
+
+      return { previousDetail, previousList };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousDetail) {
+        queryClient.setQueryData(["clientes", clientId], context.previousDetail);
+      }
+      if (context?.previousList) {
+        queryClient.setQueryData(["clientes"], context.previousList);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clientes"] });
       queryClient.invalidateQueries({ queryKey: ["clientes", clientId] });
@@ -66,6 +100,22 @@ export default function ClienteDetallado() {
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteClient(clientId),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["clientes"] });
+      const previousList = queryClient.getQueryData<Cliente[]>(["clientes"]);
+      if (previousList) {
+        queryClient.setQueryData<Cliente[]>(
+          ["clientes"],
+          previousList.filter((c) => c.id !== clientId)
+        );
+      }
+      return { previousList };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousList) {
+        queryClient.setQueryData(["clientes"], context.previousList);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clientes"] });
       router.back();

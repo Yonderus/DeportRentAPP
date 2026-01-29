@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Session } from "@supabase/supabase-js";
-import { updateUserProfile, logoutSession, getProfileByUserId, updateProfileNameForUser } from "../services/authService";
+import { updateUserProfile, logoutSession, getProfileByUserId, updateProfileFieldsForUser } from "../services/authService";
 
 type RoleName = "NORMAL" | "ADMIN";
 
@@ -100,15 +100,13 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
   },
 
   updatePerfil: async (data) => {
-    await updateUserProfile(data);
-    if (data.nombreVisible) {
-      const userId = get().id;
-      if (userId) {
-        await updateProfileNameForUser(userId, data.nombreVisible);
-      }
-    }
-
     const currentState = get();
+    const emailChanged =
+      data.email !== undefined && data.email !== currentState.email;
+    const nameChanged =
+      data.nombreVisible !== undefined &&
+      data.nombreVisible !== currentState.nombreVisible;
+
     const updatedState = {
       ...currentState,
       ...(data.nombreVisible !== undefined ? { nombreVisible: data.nombreVisible } : {}),
@@ -116,6 +114,15 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
     };
     set(updatedState);
     await AsyncStorage.setItem("usuario-data", JSON.stringify(updatedState));
+
+    const userId = currentState.id;
+    if (userId && (nameChanged || emailChanged)) {
+      await updateProfileFieldsForUser(userId, data);
+    }
+
+    if (emailChanged) {
+      await updateUserProfile({ email: data.email });
+    }
   },
 
   logout: async () => {

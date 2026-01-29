@@ -65,29 +65,35 @@ export const getProfileByUserId = async (userId: string) => {
   return data;
 };
 
-export const updateProfileNameForUser = async (
+export const updateProfileFieldsForUser = async (
   userId: string,
-  nombreVisible?: string
+  data: { nombreVisible?: string; email?: string }
 ) => {
-  if (!nombreVisible) return;
+  if (!data.nombreVisible && !data.email) return;
 
   const profile = await getProfileByUserId(userId);
   if (!profile) return;
 
-  const candidateFields = [
-    "nombre_visible",
-    "nombreVisible",
-    "nombre",
-    "full_name",
-    "name",
-  ];
+  const nameFields = ["nombre_visible", "nombreVisible", "nombre", "full_name", "name"];
+  const emailFields = ["email", "correo", "mail"];
 
-  const field = candidateFields.find((f) => Object.prototype.hasOwnProperty.call(profile, f));
-  if (!field) return;
+  const updates: Record<string, string> = {};
+
+  if (data.nombreVisible) {
+    const nameField = nameFields.find((f) => Object.prototype.hasOwnProperty.call(profile, f));
+    if (nameField) updates[nameField] = data.nombreVisible;
+  }
+
+  if (data.email) {
+    const emailField = emailFields.find((f) => Object.prototype.hasOwnProperty.call(profile, f));
+    if (emailField) updates[emailField] = data.email;
+  }
+
+  if (Object.keys(updates).length === 0) return;
 
   const { error } = await supabase
     .from("profiles")
-    .update({ [field]: nombreVisible })
+    .update(updates)
     .eq("id", userId);
 
   if (error) {
