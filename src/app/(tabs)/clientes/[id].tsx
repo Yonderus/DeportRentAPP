@@ -32,6 +32,7 @@ export default function ClienteDetallado() {
   const clientId = Number(id);
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
+  // Cliente de cache de React Query
   const queryClient = useQueryClient();
 
   const [editarVisible, setEditarVisible] = useState(false);
@@ -45,6 +46,7 @@ export default function ClienteDetallado() {
     activo: true,
   });
 
+  // Query detalle de cliente
   const {
     data: cliente,
     isLoading,
@@ -56,6 +58,7 @@ export default function ClienteDetallado() {
     enabled: Number.isFinite(clientId),
   });
 
+  // Mutación editar con optimismo (detalle + listado)
   const updateMutation = useMutation({
     mutationFn: (data: ClientForm) => updateClient(clientId, data),
     onMutate: async (data) => {
@@ -98,6 +101,7 @@ export default function ClienteDetallado() {
     },
   });
 
+  // Mutación eliminar con optimismo
   const deleteMutation = useMutation({
     mutationFn: () => deleteClient(clientId),
     onMutate: async () => {

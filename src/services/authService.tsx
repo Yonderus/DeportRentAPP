@@ -1,3 +1,6 @@
+// Servicios de autenticación y perfil (Supabase).
+// Aquí centralizamos llamadas a Auth y a la tabla profiles para mantener
+// un único punto de acceso y evitar lógica duplicada en componentes.
 import { supabase } from "../lib/supabaseClient";
 
 export interface LoginResult {
@@ -5,6 +8,8 @@ export interface LoginResult {
   message: string;
 }
 
+// Login con email/contraseña usando Supabase Auth.
+// Retorna un objeto simple para mostrar mensajes en UI.
 export const loginWithPassword = async (
   email: string,
   password: string
@@ -29,6 +34,8 @@ export const loginWithPassword = async (
   return { success: true, message: "Login exitoso" };
 };
 
+// Cerrar sesión en Supabase.
+// Limpia tokens de la sesión actual en el cliente.
 export const logoutSession = async () => {
   const { error } = await supabase.auth.signOut();
   if (error) {
@@ -36,6 +43,8 @@ export const logoutSession = async () => {
   }
 };
 
+// Actualiza el usuario de Auth (solo email / metadata).
+// Cambiar email puede requerir confirmación por correo.
 export const updateUserProfile = async (data: {
   nombreVisible?: string;
   email?: string;
@@ -50,6 +59,8 @@ export const updateUserProfile = async (data: {
   }
 };
 
+// Obtiene el registro del usuario en la tabla profiles.
+// Si no existe (o RLS lo impide) se devuelve null.
 export const getProfileByUserId = async (userId: string) => {
   const { data, error } = await supabase
     .from("profiles")
@@ -65,6 +76,9 @@ export const getProfileByUserId = async (userId: string) => {
   return data;
 };
 
+// Actualiza campos en profiles según la columna disponible.
+// Esto permite adaptarse a distintas nomenclaturas de columnas
+// (nombre_visible, full_name, etc.) sin romper la app.
 export const updateProfileFieldsForUser = async (
   userId: string,
   data: { nombreVisible?: string; email?: string }

@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Session } from "@supabase/supabase-js";
+// Servicios de auth/perfiles.
+// Separar la lógica de Supabase en servicios mantiene el store simple.
 import { updateUserProfile, logoutSession, getProfileByUserId, updateProfileFieldsForUser } from "../services/authService";
 
 type RoleName = "NORMAL" | "ADMIN";
@@ -27,6 +29,8 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
   rol: null,
   isLoggedIn: false,
 
+  // Sincroniza el store con la sesión actual de Supabase.
+  // Se ejecuta al arrancar la app y en cada cambio de sesión.
   setFromSession: async (session) => {
     if (!session?.user) {
       await get().clearUser();
@@ -34,6 +38,8 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
     }
 
     const user = session.user;
+    // Cargar perfil desde tabla profiles (rol/nombre visible).
+    // Si falla, se hace fallback a metadata y email.
     let profile: any = null;
     try {
       profile = await getProfileByUserId(user.id);
@@ -41,6 +47,8 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
       console.warn("No se pudo cargar el profile:", error);
     }
 
+    // Resolver rol desde profile o metadata.
+    // Se normaliza a mayúsculas para encajar con el tipo RoleName.
     const roleRaw =
       (profile?.role as string | undefined) ??
       (profile?.rol as string | undefined) ??
@@ -49,6 +57,8 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
       (user.user_metadata?.rol as string | undefined);
     const role = (roleRaw?.toUpperCase() as RoleName | undefined) ?? "NORMAL";
 
+    // Resolver nombre visible (prioridad: profile).
+    // Se usan varias columnas posibles por compatibilidad.
     const nombreVisible =
       (profile?.nombre_visible as string | undefined) ??
       (profile?.nombreVisible as string | undefined) ??
@@ -74,6 +84,8 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
     await AsyncStorage.setItem("usuario-data", JSON.stringify(newState));
   },
 
+  // Limpia estado local y storage.
+  // Se usa al cerrar sesión o si no hay usuario.
   clearUser: async () => {
     set({
       id: null,
@@ -85,6 +97,8 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
     await AsyncStorage.removeItem("usuario-data");
   },
 
+  // Actualiza nombre visible localmente (solo UI/Storage).
+  // No toca Supabase; para eso se usa updatePerfil.
   setNombreVisible: async (nombre) => {
     const currentState = get();
     const updatedState = { ...currentState, nombreVisible: nombre };
@@ -92,6 +106,7 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
     await AsyncStorage.setItem("usuario-data", JSON.stringify(updatedState));
   },
 
+  // Actualiza email localmente (solo UI/Storage).
   setEmail: async (email) => {
     const currentState = get();
     const updatedState = { ...currentState, email };
@@ -99,6 +114,8 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
     await AsyncStorage.setItem("usuario-data", JSON.stringify(updatedState));
   },
 
+  // Actualiza perfil remoto y sincroniza store.
+  // Primero actualiza UI para feedback rápido y luego remoto.
   updatePerfil: async (data) => {
     const currentState = get();
     const emailChanged =
@@ -115,16 +132,21 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
     set(updatedState);
     await AsyncStorage.setItem("usuario-data", JSON.stringify(updatedState));
 
+    // Actualiza tabla profiles si existe y hay cambios relevantes.
     const userId = currentState.id;
     if (userId && (nameChanged || emailChanged)) {
       await updateProfileFieldsForUser(userId, data);
     }
 
+    // Actualiza Auth solo si el email cambia (esto puede tardar más
+    // porque Supabase puede requerir confirmación por correo).
     if (emailChanged) {
       await updateUserProfile({ email: data.email });
     }
   },
 
+  // Logout de Supabase y limpieza local.
+  // Deja el estado en modo anónimo.
   logout: async () => {
     await logoutSession();
     await get().clearUser();

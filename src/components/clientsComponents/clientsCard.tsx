@@ -24,6 +24,8 @@ const crearClienteVacio = (): ClientForm => ({
 export default function ClientsCard() {
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
+  // Cliente de cache de React Query.
+  // Permite invalidar y actualizar datos sin recargar toda la app.
   const queryClient = useQueryClient();
 
   // modal formulario (crear)
@@ -31,6 +33,8 @@ export default function ClientsCard() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<ClientForm>(crearClienteVacio());
 
+  // Query principal de clientes.
+  // `queryKey` identifica el cache; `queryFn` obtiene datos de Supabase.
   const {
     data: clients = [],
     isLoading,
@@ -41,6 +45,8 @@ export default function ClientsCard() {
     queryFn: getClients,
   });
 
+  // Mutación crear con optimismo.
+  // Se inserta temporalmente en UI para que el usuario vea el cambio al instante.
   const createMutation = useMutation({
     mutationFn: addClient,
     onMutate: async (newClient) => {
@@ -61,6 +67,8 @@ export default function ClientsCard() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["clientes"] }),
   });
 
+  // Mutación editar con optimismo.
+  // Actualiza el cache local inmediatamente y luego sincroniza con Supabase.
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<Omit<Cliente, "id">> }) =>
       updateClient(id, data),
@@ -106,6 +114,8 @@ export default function ClientsCard() {
     setFormVisible(false);
   };
 
+  // Mensajes de estado.
+  // Se usan para feedback visual (loading, error, vacío).
   const statusMessage = useMemo(() => {
     if (isLoading) return "";
     if (isError) return (error as Error)?.message ?? "Error al cargar clientes";

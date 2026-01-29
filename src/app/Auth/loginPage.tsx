@@ -8,6 +8,7 @@ import { router } from "expo-router";
 import TextFieldLogin from "../../components/textFieldLogin";
 import { useTemaStore } from "../(tabs)/preferencias";
 import { obtenerColores } from "../../theme";
+// React Query para manejar el login y estados de carga
 import { useMutation } from "@tanstack/react-query";
 import { loginWithPassword } from "../../services/authService";
 
@@ -17,6 +18,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Mutación de login contra Supabase
   const loginMutation = useMutation({
     mutationFn: () => loginWithPassword(email, password),
     onSuccess: (resultado) => {

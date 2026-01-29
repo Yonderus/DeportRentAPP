@@ -3,6 +3,7 @@ import { PaperProvider } from "react-native-paper";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "../context/AuthContext";
 
+// Configuración global de React Query
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

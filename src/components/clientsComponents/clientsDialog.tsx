@@ -40,6 +40,7 @@ export default function ClienteDialog({
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
 
+  // Evitar doble submit mientras guarda
   const aceptar = () => {
     if (saving) return;
     if (!value.nombre.trim()) return;
