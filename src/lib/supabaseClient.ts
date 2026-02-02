@@ -12,7 +12,7 @@ const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey ?? "";
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn(
-    "Supabase URL/Anon Key no configurados. Revisa app.json -> expo.extra"
+    "Supabase URL/Anon Key no configurados. Revisa .env (EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_ANON_KEY)"
   );
 }
 
