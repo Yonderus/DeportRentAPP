@@ -6,12 +6,24 @@ import { useUsuarioStore } from "../../../stores/useUsuarioStore";
 import { useTemaStore } from "../preferencias/index";
 import { obtenerColores } from "../../../theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { getSignedAvatarUrl, uploadAvatarForUser } from "../../../services/authService";
+import * as ImagePicker from "expo-image-picker";
 
 
 export default function PerfilScreen() {
   // Datos y acciones del usuario desde el store.
   // Este store está sincronizado con Supabase (auth + profiles).
-  const { email, rol, nombreVisible, isLoggedIn, logout, updatePerfil } = useUsuarioStore();
+  const {
+    id,
+    email,
+    rol,
+    nombreVisible,
+    avatarPath,
+    isLoggedIn,
+    logout,
+    updatePerfil,
+    updateAvatarPath,
+  } = useUsuarioStore();
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
   const [nombreEditado, setNombreEditado] = useState(nombreVisible || "");
@@ -19,6 +31,8 @@ export default function PerfilScreen() {
   const [editando, setEditando] = useState(false);
   const [errorEmail, setErrorEmail] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   // Redirigir al login si no está autenticado
   useEffect(() => {
@@ -33,6 +47,35 @@ export default function PerfilScreen() {
       setEmailEditado(email || "");
     }
   }, [nombreVisible, email, editando]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadAvatar = async () => {
+      if (!avatarPath) {
+        setAvatarUrl(null);
+        return;
+      }
+
+      try {
+        const signedUrl = await getSignedAvatarUrl(avatarPath);
+        if (mounted) {
+          setAvatarUrl(signedUrl);
+        }
+      } catch (error) {
+        console.warn("No se pudo cargar el avatar:", error);
+        if (mounted) {
+          setAvatarUrl(null);
+        }
+      }
+    };
+
+    loadAvatar();
+
+    return () => {
+      mounted = false;
+    };
+  }, [avatarPath]);
 
   // Guardar cambios de perfil (nombre/email).
   // Se actualiza profiles (rápido) y Auth si cambia el email (más lento).
@@ -57,10 +100,16 @@ export default function PerfilScreen() {
       // Guardado remoto (profiles y/o auth).
       // Si el email cambia, Supabase puede requerir confirmación.
       setSaving(true);
-      await updatePerfil({
+      const result = await updatePerfil({
         nombreVisible: nombreNormalizado,
         email: emailNormalizado,
       });
+      if (result?.emailPending) {
+        Alert.alert(
+          "Confirmación requerida",
+          "Te hemos enviado un correo para confirmar el cambio de email. El cambio se aplicará cuando lo confirmes."
+        );
+      }
       setEditando(false);
     } catch (error: any) {
       // Feedback de error al usuario
@@ -83,6 +132,55 @@ export default function PerfilScreen() {
   const handleLogout = async () => {
     await logout();
     router.replace("Auth/loginPage");
+  };
+
+  const handleCambiarFoto = async () => {
+    if (!id || uploadingAvatar) return;
+
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permission.status !== "granted") {
+      Alert.alert(
+        "Permiso requerido",
+        "Necesitamos acceso a tu galeria para elegir una foto."
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+      base64: true,
+    });
+
+    if (result.canceled) return;
+    const asset = result.assets?.[0];
+    if (!asset?.base64) {
+      Alert.alert("Error", "No se pudo leer la imagen seleccionada");
+      return;
+    }
+
+    const fileName = asset.fileName ?? "avatar.jpg";
+    const extension = fileName.includes(".")
+      ? fileName.split(".").pop()
+      : undefined;
+
+    try {
+      setUploadingAvatar(true);
+      const newAvatarPath = await uploadAvatarForUser(id, asset.base64, {
+        extension,
+        mimeType: asset.mimeType,
+      });
+      await updateAvatarPath(newAvatarPath);
+    } catch (error: any) {
+      Alert.alert(
+        "No se pudo actualizar la foto",
+        error?.message ?? "Ocurrio un error al subir la imagen"
+      );
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   // Si no está logueado, no mostrar nada (mientras redirige)
@@ -208,12 +306,19 @@ export default function PerfilScreen() {
             Resumen
           </Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-            <Avatar.Text
-              size={64}
-              label={getInitials(nombreVisible)}
-              style={{ backgroundColor: colores.avatarFondo }}
-              color={colores.avatarIcono}
-            />
+            {avatarUrl ? (
+              <Avatar.Image
+                size={64}
+                source={{ uri: avatarUrl }}
+              />
+            ) : (
+              <Avatar.Text
+                size={64}
+                label={getInitials(nombreVisible)}
+                style={{ backgroundColor: colores.avatarFondo }}
+                color={colores.avatarIcono}
+              />
+            )}
             <View style={{ flex: 1, gap: 4 }}>
               <Text style={{ color: colores.textoPrincipal, fontWeight: "700", fontSize: 16 }}>
                 {nombreVisible || "Usuario"}
@@ -229,6 +334,16 @@ export default function PerfilScreen() {
                   {rol || "NORMAL"}
                 </Text>
               </View>
+              <Button
+                mode="outlined"
+                onPress={handleCambiarFoto}
+                loading={uploadingAvatar}
+                disabled={uploadingAvatar}
+                icon="camera"
+                style={{ alignSelf: "flex-start", marginTop: 6 }}
+              >
+                Cambiar foto
+              </Button>
             </View>
           </View>
           <Divider />

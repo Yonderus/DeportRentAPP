@@ -3,7 +3,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Session } from "@supabase/supabase-js";
 // Servicios de auth/perfiles.
 // Separar la lógica de Supabase en servicios mantiene el store simple.
-import { updateUserProfile, logoutSession, getProfileByUserId, updateProfileFieldsForUser } from "../services/authService";
+import {
+  updateUserProfile,
+  logoutSession,
+  getProfileByUserId,
+  updateProfileFieldsForUser,
+  updateAvatarPathForUser,
+} from "../services/authService";
 
 type RoleName = "NORMAL" | "ADMIN";
 
@@ -11,14 +17,17 @@ type UsuarioState = {
   id: string | null;
   email: string | null;
   nombreVisible: string | null;
+  avatarPath: string | null;
   rol: RoleName | null;
   isLoggedIn: boolean;
+  lastEmailChangeAt: number | null;
 
   setFromSession: (session: Session | null) => Promise<void>;
   clearUser: () => Promise<void>;
   setNombreVisible: (nombre: string) => Promise<void>;
   setEmail: (email: string) => Promise<void>;
-  updatePerfil: (data: { nombreVisible?: string; email?: string }) => Promise<void>;
+  updatePerfil: (data: { nombreVisible?: string; email?: string }) => Promise<{ emailPending: boolean }>;
+  updateAvatarPath: (avatarPath: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -26,8 +35,10 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
   id: null,
   email: null,
   nombreVisible: null,
+  avatarPath: null,
   rol: null,
   isLoggedIn: false,
+  lastEmailChangeAt: null,
 
   // Sincroniza el store con la sesión actual de Supabase.
   // Se ejecuta al arrancar la app y en cada cambio de sesión.
@@ -72,10 +83,20 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
       user.email ??
       null;
 
+    const avatarPath =
+      (profile?.avatar_path as string | undefined) ??
+      (profile?.avatarPath as string | undefined) ??
+      (profile?.avatar_url as string | undefined) ??
+      (profile?.avatarUrl as string | undefined) ??
+      (profile?.photo_url as string | undefined) ??
+      (profile?.photoUrl as string | undefined) ??
+      null;
+
     const newState = {
       id: user.id,
       email: user.email ?? null,
       nombreVisible,
+      avatarPath,
       rol: role,
       isLoggedIn: true,
     };
@@ -91,6 +112,7 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
       id: null,
       email: null,
       nombreVisible: null,
+      avatarPath: null,
       rol: null,
       isLoggedIn: false,
     });
@@ -124,25 +146,64 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
       data.nombreVisible !== undefined &&
       data.nombreVisible !== currentState.nombreVisible;
 
+    // Si solo cambia el nombre, actualizamos rápido (sin Auth).
+    if (nameChanged && !emailChanged) {
+      const updatedState = {
+        ...currentState,
+        nombreVisible: data.nombreVisible ?? currentState.nombreVisible,
+      };
+      set(updatedState);
+      await AsyncStorage.setItem("usuario-data", JSON.stringify(updatedState));
+
+      const userId = currentState.id;
+      if (userId) {
+        await updateProfileFieldsForUser(userId, { nombreVisible: data.nombreVisible });
+      }
+
+      return { emailPending: false };
+    }
+
+    // Si cambia el email, primero actualizamos Auth para saber si queda pendiente.
+    let emailPending = false;
+    if (emailChanged) {
+      const now = Date.now();
+      const lastAttempt = currentState.lastEmailChangeAt ?? 0;
+      const minIntervalMs = 5 * 1000; // 5 segundos
+      if (now - lastAttempt < minIntervalMs) {
+        throw new Error("Has intentado cambiar el email demasiado rápido. Espera 5 segundos e inténtalo de nuevo.");
+      }
+
+      const authResult = await updateUserProfile({
+        email: data.email,
+        nombreVisible: nameChanged ? data.nombreVisible : undefined,
+      });
+      emailPending = authResult?.emailPending ?? false;
+
+      set({ ...get(), lastEmailChangeAt: now });
+    }
+
+    // Actualizamos estado local:
+    // - si el email queda pendiente, mantenemos el email anterior
+    // - si no queda pendiente, aplicamos el nuevo email
     const updatedState = {
       ...currentState,
-      ...(data.nombreVisible !== undefined ? { nombreVisible: data.nombreVisible } : {}),
-      ...(data.email !== undefined ? { email: data.email } : {}),
+      ...(nameChanged ? { nombreVisible: data.nombreVisible } : {}),
+      ...(emailChanged && !emailPending ? { email: data.email } : {}),
+      ...(emailChanged ? { lastEmailChangeAt: Date.now() } : {}),
     };
     set(updatedState);
     await AsyncStorage.setItem("usuario-data", JSON.stringify(updatedState));
 
-    // Actualiza tabla profiles si existe y hay cambios relevantes.
+    // Actualiza tabla profiles (no tocar email si está pendiente).
     const userId = currentState.id;
-    if (userId && (nameChanged || emailChanged)) {
-      await updateProfileFieldsForUser(userId, data);
+    if (userId && (nameChanged || (emailChanged && !emailPending))) {
+      await updateProfileFieldsForUser(userId, {
+        nombreVisible: nameChanged ? data.nombreVisible : undefined,
+        email: emailChanged && !emailPending ? data.email : undefined,
+      });
     }
 
-    // Actualiza Auth solo si el email cambia (esto puede tardar más
-    // porque Supabase puede requerir confirmación por correo).
-    if (emailChanged) {
-      await updateUserProfile({ email: data.email });
-    }
+    return { emailPending };
   },
 
   // Logout de Supabase y limpieza local.
@@ -150,5 +211,20 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
   logout: async () => {
     await logoutSession();
     await get().clearUser();
+  },
+
+  // Actualiza el avatar en local y en profiles.
+  updateAvatarPath: async (avatarPath) => {
+    if (!avatarPath) return;
+
+    const currentState = get();
+    const updatedState = { ...currentState, avatarPath };
+    set(updatedState);
+    await AsyncStorage.setItem("usuario-data", JSON.stringify(updatedState));
+
+    const userId = currentState.id;
+    if (userId) {
+      await updateAvatarPathForUser(userId, avatarPath);
+    }
   },
 }));
