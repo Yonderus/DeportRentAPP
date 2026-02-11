@@ -10,9 +10,11 @@ import {
   Keyboard,
 } from "react-native";
 import { Button, TextInput, Text } from "react-native-paper";
-import { Client } from "../../data/clients";
+import { Cliente } from "../../types/types";
+import { useTemaStore } from "../../app/(tabs)/preferencias";
+import { obtenerColores } from "../../theme";
 
-export type ClientForm = Omit<Client, "id">;
+export type ClientForm = Omit<Cliente, "id">;
 
 type Props = {
   visible: boolean;
@@ -21,7 +23,10 @@ type Props = {
   onChange: (v: ClientForm) => void;
   onCancel: () => void;
   onSave: (v: ClientForm) => void;
+  saving?: boolean;
 };
+
+const RADIUS = 16;
 
 export default function ClienteDialog({
   visible,
@@ -30,74 +35,91 @@ export default function ClienteDialog({
   onChange,
   onCancel,
   onSave,
+  saving = false,
 }: Props) {
-  const aceptar = () => {
-    if (!value.name.trim()) return;
-    if (!value.surname.trim()) return;
-    if (!value.phone.trim()) return;
+  const tema = useTemaStore((s) => s.tema);
+  const colores = obtenerColores(tema);
 
-    onSave({ ...value, pedidos: value.pedidos ?? [] });
+  // Evitar doble submit mientras guarda
+  const aceptar = () => {
+    if (saving) return;
+    if (!value.nombre.trim()) return;
+
+    onSave(value);
   };
 
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onCancel}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.backdrop}>
+        <View style={[s.backdrop, { backgroundColor: "rgba(0,0,0,0.5)" }]}>
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={{ width: "100%" }}
           >
-            <View style={styles.card}>
-              <Text variant="titleMedium" style={styles.title}>
+            <View style={[s.card, { backgroundColor: colores.fondoCard }]}>
+              <Text variant="titleMedium" style={[s.title, { color: colores.textoPrincipal }]}>
                 {title}
               </Text>
 
-              <ScrollView
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 8 }}
-              >
+              <ScrollView keyboardShouldPersistTaps="handled">
                 <TextInput
                   mode="outlined"
-                  label="Nombre"
-                  value={value.name}
-                  onChangeText={(t) => onChange({ ...value, name: t })}
-                  style={styles.input}
+                  placeholder="Nombre"
+                  value={value.nombre}
+                  onChangeText={(t) => onChange({ ...value, nombre: t })}
+                  style={[s.input, { backgroundColor: colores.fondoInput }]}
+                  outlineStyle={{ borderRadius: RADIUS }}
+                  left={<TextInput.Icon icon="account" />}
+                  textColor={colores.textoPrincipal}
+                  placeholderTextColor={colores.textoSecundario}
                 />
 
                 <TextInput
                   mode="outlined"
-                  label="Apellidos"
-                  value={value.surname}
-                  onChangeText={(t) => onChange({ ...value, surname: t })}
-                  style={styles.input}
+                  placeholder="NIF/CIF (opcional)"
+                  value={value.nifCif}
+                  onChangeText={(t) => onChange({ ...value, nifCif: t })}
+                  style={[s.input, { backgroundColor: colores.fondoInput }]}
+                  outlineStyle={{ borderRadius: RADIUS }}
+                  left={<TextInput.Icon icon="card-account-details" />}
+                  textColor={colores.textoPrincipal}
+                  placeholderTextColor={colores.textoSecundario}
                 />
 
                 <TextInput
                   mode="outlined"
-                  label="Teléfono"
-                  value={value.phone}
-                  onChangeText={(t) => onChange({ ...value, phone: t })}
-                  style={styles.input}
+                  placeholder="Teléfono (opcional)"
+                  value={value.telefono}
+                  onChangeText={(t) => onChange({ ...value, telefono: t })}
+                  style={[s.input, { backgroundColor: colores.fondoInput }]}
+                  outlineStyle={{ borderRadius: RADIUS }}
+                  left={<TextInput.Icon icon="phone" />}
+                  keyboardType="phone-pad"
+                  textColor={colores.textoPrincipal}
+                  placeholderTextColor={colores.textoSecundario}
                 />
 
                 <TextInput
                   mode="outlined"
-                  label="Email"
+                  placeholder="Email"
                   value={value.email}
                   onChangeText={(t) => onChange({ ...value, email: t })}
-                  autoCapitalize="none"
+                  style={[s.input, { backgroundColor: colores.fondoInput }]}
+                  outlineStyle={{ borderRadius: RADIUS }}
+                  left={<TextInput.Icon icon="email" />}
                   keyboardType="email-address"
-                  style={styles.input}
+                  autoCapitalize="none"
+                  textColor={colores.textoPrincipal}
+                  placeholderTextColor={colores.textoSecundario}
                 />
               </ScrollView>
 
-              <View style={styles.row}>
-                <Button onPress={onCancel} mode="text">
+              <View style={s.row}>
+                <Button onPress={onCancel} mode="text" disabled={saving}>
                   Cancelar
                 </Button>
-                <Button onPress={aceptar} mode="contained">
-                  Aceptar
+                <Button onPress={aceptar} mode="contained" loading={saving} disabled={saving}>
+                  Guardar
                 </Button>
               </View>
             </View>
@@ -108,18 +130,14 @@ export default function ClienteDialog({
   );
 }
 
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "center",
     padding: 16,
   },
   card: {
-    width: "100%",
-    maxHeight: "100%",
-    backgroundColor: "white",
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
   },
   title: {
@@ -128,10 +146,9 @@ const styles = StyleSheet.create({
   },
   input: {
     marginTop: 10,
-    backgroundColor: "#f5f6fa",
   },
   row: {
-    marginTop: 12,
+    marginTop: 14,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",

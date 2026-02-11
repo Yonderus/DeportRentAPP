@@ -1,0 +1,21 @@
+import React from "react";
+import { Stack } from "expo-router";
+import { useTemaStore } from "./index";
+import { obtenerColores } from "../../../theme";
+
+export default function PreferenciasLayout() {
+  const tema = useTemaStore((s) => s.tema);
+  const colores = obtenerColores(tema);
+
+  return (
+    <Stack
+      screenOptions={{
+        headerStyle: { backgroundColor: colores.fondoCard },
+        headerTintColor: colores.textoPrincipal,
+        headerTitleStyle: { color: colores.textoPrincipal, fontWeight: "700" },
+      }}
+    >
+
+    </Stack>
+  );
+}

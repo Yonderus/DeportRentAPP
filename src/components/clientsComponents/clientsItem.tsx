@@ -1,51 +1,73 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { IconButton } from "react-native-paper";
-import { Client } from "../../data/clients";
+import { Pressable, View, Text, StyleSheet } from "react-native";
+import { Avatar } from "react-native-paper";
+import { Cliente } from "../../types/types";
+import { useTemaStore } from "../../app/(tabs)/preferencias";
+import { obtenerColores } from "../../theme";
 
 type Props = {
-  client: Client;
-  onEdit: (c: Client) => void;
-  onDelete: (id: number) => void;
+  client: Cliente;
+  onPress: (client: Cliente) => void;
 };
 
-export default function ClienteItem({ client, onEdit, onDelete }: Props) {
+export default function ClienteItem({ client, onPress }: Props) {
+  const tema = useTemaStore((s) => s.tema);
+  const colores = obtenerColores(tema);
+  
+  const iniciales = client.nombre?.charAt(0) ?? "";
+
   return (
-    <View style={s.row}>
-      <View style={{ flex: 1 }}>
-        <Text style={s.name}>
-          {client.name} {client.surname}
+    <Pressable
+      onPress={() => onPress(client)}
+      style={({ pressed }) => [s.card, { backgroundColor: colores.fondoCard }, pressed && s.pressed]}
+    >
+      <Avatar.Text
+        size={44}
+        label={iniciales.toUpperCase()}
+        style={[s.avatar, { backgroundColor: colores.btnPrimario }]}
+        labelStyle={s.avatarText}
+      />
+
+      <View style={s.info}>
+        <Text style={[s.name, { color: colores.textoPrincipal }]}>
+          {client.nombre}
         </Text>
-        <Text style={s.text}>{client.phone}</Text>
-        {client.email ? <Text style={s.text}>{client.email}</Text> : null}
+
+        <Text style={[s.secondary, { color: colores.textoSecundario }]}>{client.telefono}</Text>
+
+        {client.email ? (
+          <Text style={[s.secondary, { color: colores.textoSecundario }]} numberOfLines={1}>
+            {client.email}
+          </Text>
+        ) : null}
       </View>
 
-      <IconButton icon="pencil" onPress={() => onEdit(client)} />
-      <IconButton icon="delete" onPress={() => onDelete(client.id)} />
-    </View>
+      <Text style={[s.chevron, { color: colores.textoTerciario }]}>›</Text>
+    </Pressable>
   );
 }
 
 const s = StyleSheet.create({
-  row: {
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: "#dcdcdc",
-    borderRadius: 10,
-    marginBottom: 10,
+  card: {
     flexDirection: "row",
     alignItems: "center",
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 12,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
-  name: {
-    fontSize: 16,
-    fontWeight: "800",
-    color: "#222",
-    marginBottom: 2,
-  },
-  text: {
-    fontSize: 14,
-    color: "#606060ff",
-    fontWeight: "600",
-  },
+  
+  pressed: { opacity: 0.85 },
+  avatar: { marginRight: 12 },
+  avatarText: { fontWeight: "800", color: "white" },
+  info: { flex: 1 },
+  name: { fontSize: 16, fontWeight: "800" },
+  secondary: { fontSize: 13, marginTop: 2 },
+  chevron: { fontSize: 28, fontWeight: "900", marginLeft: 8 },
 });

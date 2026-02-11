@@ -1,16 +1,30 @@
 import { Stack } from "expo-router";
 import { PaperProvider } from "react-native-paper";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider } from "../context/AuthContext";
+
+// Configuración global de React Query
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 export default function RootLayout() {
   return (
-    <PaperProvider>
-      <Stack
-        screenOptions={{
-          headerStyle: { backgroundColor: "#0f172a" },
-          headerTintColor: "#ffffff",
-          title: "DeportRentAPP",
-        }}
-      />
-    </PaperProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <PaperProvider>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+            }}
+          />
+        </PaperProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
