@@ -56,7 +56,7 @@ export default function InicioScreen() {
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
   const router = useRouter();
-  const { nombreVisible, email, rol, avatarPath } = useUsuarioStore();
+  const { nombreVisible, email, rol, avatarPath, avatarUpdatedAt } = useUsuarioStore();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const opcionesDisponibles = menuOptions.filter(
@@ -77,16 +77,19 @@ export default function InicioScreen() {
       .substring(0, 2);
   };
 
+  // Refresca la URL firmada cuando cambia el avatar.
   useEffect(() => {
     let mounted = true;
 
     const loadAvatar = async () => {
+      // Si no hay path, usar avatar por iniciales.
       if (!avatarPath) {
         setAvatarUrl(null);
         return;
       }
 
       try {
+        // URL firmada temporal para buckets privados.
         const signedUrl = await getSignedAvatarUrl(avatarPath);
         if (mounted) setAvatarUrl(signedUrl);
       } catch (error) {
@@ -100,7 +103,7 @@ export default function InicioScreen() {
     return () => {
       mounted = false;
     };
-  }, [avatarPath]);
+  }, [avatarPath, avatarUpdatedAt]);
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colores.fondoPrincipal }]}>

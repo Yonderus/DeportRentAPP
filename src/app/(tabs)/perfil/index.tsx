@@ -19,6 +19,7 @@ export default function PerfilScreen() {
     rol,
     nombreVisible,
     avatarPath,
+    avatarUpdatedAt,
     isLoggedIn,
     logout,
     updatePerfil,
@@ -35,6 +36,7 @@ export default function PerfilScreen() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   // Redirigir al login si no está autenticado
+  // Refresca la URL firmada cuando cambia el avatar.
   useEffect(() => {
     if (!isLoggedIn) {
       router.replace("Auth/loginPage");
@@ -52,12 +54,14 @@ export default function PerfilScreen() {
     let mounted = true;
 
     const loadAvatar = async () => {
+      // Si no hay ruta, forzar avatar con iniciales.
       if (!avatarPath) {
         setAvatarUrl(null);
         return;
       }
 
       try {
+        // URL firmada temporal para buckets privados.
         const signedUrl = await getSignedAvatarUrl(avatarPath);
         if (mounted) {
           setAvatarUrl(signedUrl);
@@ -75,7 +79,7 @@ export default function PerfilScreen() {
     return () => {
       mounted = false;
     };
-  }, [avatarPath]);
+  }, [avatarPath, avatarUpdatedAt]);
 
   // Guardar cambios de perfil (nombre/email).
   // Se actualiza profiles (rápido) y Auth si cambia el email (más lento).
@@ -151,6 +155,7 @@ export default function PerfilScreen() {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
+      // Base64 evita archivos 0 bytes en Storage.
       base64: true,
     });
 
@@ -168,6 +173,7 @@ export default function PerfilScreen() {
 
     try {
       setUploadingAvatar(true);
+      // Subida a Storage + guardado de path en profiles.
       const newAvatarPath = await uploadAvatarForUser(id, asset.base64, {
         extension,
         mimeType: asset.mimeType,

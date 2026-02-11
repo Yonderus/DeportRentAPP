@@ -18,6 +18,8 @@ type UsuarioState = {
   email: string | null;
   nombreVisible: string | null;
   avatarPath: string | null;
+  // Marca de tiempo para forzar refresh de la imagen en UI.
+  avatarUpdatedAt: number | null;
   rol: RoleName | null;
   isLoggedIn: boolean;
   lastEmailChangeAt: number | null;
@@ -36,6 +38,7 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
   email: null,
   nombreVisible: null,
   avatarPath: null,
+  avatarUpdatedAt: null,
   rol: null,
   isLoggedIn: false,
   lastEmailChangeAt: null,
@@ -83,6 +86,7 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
       user.email ??
       null;
 
+    // Avatar en Storage (ruta relativa dentro del bucket).
     const avatarPath =
       (profile?.avatar_path as string | undefined) ??
       (profile?.avatarPath as string | undefined) ??
@@ -97,6 +101,8 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
       email: user.email ?? null,
       nombreVisible,
       avatarPath,
+      // Se resetea para evitar refrescos innecesarios al iniciar sesion.
+      avatarUpdatedAt: null,
       rol: role,
       isLoggedIn: true,
     };
@@ -113,6 +119,7 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
       email: null,
       nombreVisible: null,
       avatarPath: null,
+      avatarUpdatedAt: null,
       rol: null,
       isLoggedIn: false,
     });
@@ -218,7 +225,8 @@ export const useUsuarioStore = create<UsuarioState>()((set, get) => ({
     if (!avatarPath) return;
 
     const currentState = get();
-    const updatedState = { ...currentState, avatarPath };
+    // Actualiza estado y dispara refresh de URL firmada en las pantallas.
+    const updatedState = { ...currentState, avatarPath, avatarUpdatedAt: Date.now() };
     set(updatedState);
     await AsyncStorage.setItem("usuario-data", JSON.stringify(updatedState));
 

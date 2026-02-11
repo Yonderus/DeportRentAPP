@@ -5,7 +5,9 @@ import { supabase } from "../lib/supabaseClient";
 import Constants from "expo-constants";
 import { decode } from "base64-arraybuffer";
 
+// Bucket privado donde se guardan los avatars del usuario.
 const AVATAR_BUCKET = "imagenes-de-perfil";
+// Ext por defecto si no se puede detectar.
 const DEFAULT_AVATAR_EXT = "jpg";
 
 export interface LoginResult {
@@ -153,7 +155,7 @@ export const updateProfileFieldsForUser = async (
   }
 };
 
-// Guarda el path del avatar en la tabla profiles.
+// Guarda el path del avatar en profiles para recuperarlo luego.
 export const updateAvatarPathForUser = async (
   userId: string,
   avatarPath: string
@@ -170,6 +172,7 @@ export const updateAvatarPathForUser = async (
   }
 };
 
+// Detecta extension si viene en el nombre del archivo.
 const getFileExtensionFromUri = (uri: string) => {
   const cleanUri = uri.split("?")[0];
   const dotIndex = cleanUri.lastIndexOf(".");
@@ -177,6 +180,7 @@ const getFileExtensionFromUri = (uri: string) => {
   return cleanUri.substring(dotIndex + 1).toLowerCase();
 };
 
+// Mapea extension -> mime type para Storage.
 const getContentTypeFromExtension = (ext: string) => {
   switch (ext) {
     case "png":
@@ -201,13 +205,16 @@ export const uploadAvatarForUser = async (
     throw new Error("Falta userId o los datos base64");
   }
 
+  // Normaliza extension y content-type para guardar en Storage.
   const rawExtension = options?.extension ?? DEFAULT_AVATAR_EXT;
   const extension = rawExtension.replace(".", "").toLowerCase();
   const contentType = options?.mimeType ?? getContentTypeFromExtension(extension);
   const avatarPath = `users/${userId}/avatar.${extension}`;
 
+  // Convertir base64 a buffer para la subida directa a Supabase.
   const fileBuffer = decode(base64Data);
 
+  // Subida con upsert para reemplazar el avatar anterior.
   const { error } = await supabase
     .storage
     .from(AVATAR_BUCKET)
@@ -223,7 +230,7 @@ export const uploadAvatarForUser = async (
   return avatarPath;
 };
 
-// Genera una URL firmada para el avatar almacenado en Supabase Storage.
+// Genera una URL firmada para leer imagen privada desde Storage.
 export const getSignedAvatarUrl = async (
   avatarPath: string,
   expiresInSeconds = 60 * 60
