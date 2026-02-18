@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ScrollView, View } from "react-native";
+import { Alert, ScrollView, View } from "react-native";
 import { Avatar, Button, Card, Divider, IconButton, List, Text, TextInput } from "react-native-paper";
 import { router } from "expo-router";
 import { useUsuarioStore } from "../../../stores/useUsuarioStore";
@@ -9,6 +9,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 
 export default function PerfilScreen() {
+  // Datos y acciones del usuario desde el store.
+  // Este store está sincronizado con Supabase (auth + profiles).
   const { email, rol, nombreVisible, isLoggedIn, logout, updatePerfil } = useUsuarioStore();
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
@@ -16,6 +18,7 @@ export default function PerfilScreen() {
   const [emailEditado, setEmailEditado] = useState(email || "");
   const [editando, setEditando] = useState(false);
   const [errorEmail, setErrorEmail] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   // Redirigir al login si no está autenticado
   useEffect(() => {
@@ -31,6 +34,8 @@ export default function PerfilScreen() {
     }
   }, [nombreVisible, email, editando]);
 
+  // Guardar cambios de perfil (nombre/email).
+  // Se actualiza profiles (rápido) y Auth si cambia el email (más lento).
   const handleGuardar = async () => {
     const emailNormalizado = emailEditado.trim();
     if (!emailNormalizado) {
@@ -39,11 +44,33 @@ export default function PerfilScreen() {
     }
 
     setErrorEmail(null);
-    await updatePerfil({
-      nombreVisible: nombreEditado.trim(),
-      email: emailNormalizado,
-    });
-    setEditando(false);
+    const nombreNormalizado = nombreEditado.trim();
+
+    // Evitar guardar si no hay cambios para no disparar llamadas remotas
+    // ni mostrar loaders innecesarios.
+    if (nombreNormalizado === (nombreVisible ?? "") && emailNormalizado === (email ?? "")) {
+      setEditando(false);
+      return;
+    }
+
+    try {
+      // Guardado remoto (profiles y/o auth).
+      // Si el email cambia, Supabase puede requerir confirmación.
+      setSaving(true);
+      await updatePerfil({
+        nombreVisible: nombreNormalizado,
+        email: emailNormalizado,
+      });
+      setEditando(false);
+    } catch (error: any) {
+      // Feedback de error al usuario
+      Alert.alert(
+        "No se pudo guardar",
+        error?.message ?? "Ocurrió un error al guardar los datos"
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancelar = () => {
@@ -159,6 +186,8 @@ export default function PerfilScreen() {
             mode="contained"
             onPress={handleGuardar}
             style={{ flex: 1, backgroundColor: colores.btnPrimario }}
+            loading={saving}
+            disabled={saving}
           >
             Guardar
           </Button>
@@ -166,6 +195,7 @@ export default function PerfilScreen() {
             mode="outlined"
             onPress={handleCancelar}
             style={{ flex: 1 }}
+            disabled={saving}
           >
             Cancelar
           </Button>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Cliente } from "../../../types/types";
 import { getClientById, updateClient, deleteClient } from "../../../services/clientsService";
@@ -31,9 +32,9 @@ export default function ClienteDetallado() {
   const clientId = Number(id);
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
+  // Cliente de cache de React Query
+  const queryClient = useQueryClient();
 
-  const [cliente, setCliente] = useState<Cliente | null>(null);
-  const [cargando, setCargando] = useState(true);
   const [editarVisible, setEditarVisible] = useState(false);
 
   const [form, setForm] = useState<ClientForm>({
@@ -45,29 +46,107 @@ export default function ClienteDetallado() {
     activo: true,
   });
 
-  const cargar = () => {
-    setCargando(true);
-    const c = getClientById(clientId);
-    setCliente(c ?? null);
-    if (c) setForm(toForm(c)); 
-    setCargando(false);
-  };
+  // Query detalle de cliente
+  const {
+    data: cliente,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["clientes", clientId],
+    queryFn: () => getClientById(clientId),
+    enabled: Number.isFinite(clientId),
+  });
 
-  useEffect(() => {
-    cargar();
-  }, [clientId]);
+  // Mutación editar con optimismo (detalle + listado)
+  const updateMutation = useMutation({
+    mutationFn: (data: ClientForm) => updateClient(clientId, data),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ["clientes", clientId] });
+      await queryClient.cancelQueries({ queryKey: ["clientes"] });
 
-  const guardar = (data: ClientForm) => {
-    updateClient(clientId, data);
-    cargar();
+      const previousDetail = queryClient.getQueryData<Cliente | null>([
+        "clientes",
+        clientId,
+      ]);
+      const previousList = queryClient.getQueryData<Cliente[]>(["clientes"]);
+
+      if (previousDetail) {
+        queryClient.setQueryData<Cliente | null>(["clientes", clientId], {
+          ...previousDetail,
+          ...data,
+        });
+      }
+
+      if (previousList) {
+        queryClient.setQueryData<Cliente[]>(
+          ["clientes"],
+          previousList.map((c) => (c.id === clientId ? { ...c, ...data } : c))
+        );
+      }
+
+      return { previousDetail, previousList };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousDetail) {
+        queryClient.setQueryData(["clientes", clientId], context.previousDetail);
+      }
+      if (context?.previousList) {
+        queryClient.setQueryData(["clientes"], context.previousList);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clientes"] });
+      queryClient.invalidateQueries({ queryKey: ["clientes", clientId] });
+    },
+  });
+
+  // Mutación eliminar con optimismo
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteClient(clientId),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["clientes"] });
+      const previousList = queryClient.getQueryData<Cliente[]>(["clientes"]);
+      if (previousList) {
+        queryClient.setQueryData<Cliente[]>(
+          ["clientes"],
+          previousList.filter((c) => c.id !== clientId)
+        );
+      }
+      return { previousList };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousList) {
+        queryClient.setQueryData(["clientes"], context.previousList);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clientes"] });
+      router.back();
+    },
+  });
+
+  const guardar = async (data: ClientForm) => {
+    await updateMutation.mutateAsync(data);
     setEditarVisible(false);
   };
 
-  if (cargando) {
+
+  if (isLoading) {
     return (
       <View style={[s.center, { backgroundColor: colores.fondoPrincipal }]}>
         <ActivityIndicator size="large" />
         <Text style={[s.loadingText, { color: colores.textoSecundario }]}>Cargando cliente...</Text>
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={[s.center, { backgroundColor: colores.fondoPrincipal }]}>
+        <Text style={[s.error, { color: colores.enlaces }]}>
+          {(error as Error)?.message ?? "Error al cargar cliente"}
+        </Text>
       </View>
     );
   }
@@ -155,8 +234,7 @@ export default function ClienteDetallado() {
               text: "Eliminar",
               style: "destructive",
               onPress: () => {
-                deleteClient(cliente.id);
-                router.back();
+                deleteMutation.mutate();
               },
             },
           ]);
