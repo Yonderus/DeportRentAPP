@@ -46,7 +46,7 @@ const menuOptions: MenuCard[] = [
     title: "Preferencias",
     description: "Configuración de la aplicación",
     icon: "cog",
-    route: "/preferencias",
+    route: "/perfil/preferencias",
     color: "#6B7280",
     rolesPermitidos: ['ADMIN', 'NORMAL'],
   },
