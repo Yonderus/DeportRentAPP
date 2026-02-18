@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import { StyleSheet, TextInput, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { TextInput } from "react-native-paper";
+import { useTemaStore } from "../app/(tabs)/preferencias";
+import { obtenerColores } from "../theme";
 
 interface Props {
   placeholder?: string;
@@ -13,48 +16,23 @@ const TextFieldLogin: React.FC<Props> = ({
   icon
 }) => {
   const [value, setValue] = useState("");
+  const tema = useTemaStore((s) => s.tema);
+  const colores = obtenerColores(tema);
 
   return (
-    <View style={styles.container}>
-
-      {/*Lo del icono me ha ayudado la IA*/}
-      {icon && <View style={styles.icon}>{icon}</View>}
-
       <TextInput
-        style={styles.input}
+        mode="outlined"
         placeholder={placeholder}
         secureTextEntry={secure}
         value={value}
         onChangeText={setValue}
-        placeholderTextColor="#9CA3AF"
+        left={icon ? <TextInput.Icon icon={() => icon} /> : undefined}
+        style={{ backgroundColor: colores.fondoInput }}
+        outlineStyle={{ borderRadius: 10 }}
+        textColor={colores.textoPrincipal}
+        placeholderTextColor={colores.textoSecundario}
       />
-    </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",          
-    alignItems: "center",          
-    borderWidth: 1,
-    borderRadius: 10,
-    borderColor: "silver",
-    backgroundColor: "whitesmoke",
-    width: "100%",
-    height: 45,
-    paddingHorizontal: 10,
-    marginVertical: 12,
-  },
-
-  icon: {
-    marginRight: 8, 
-  },
-
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: "#111",
-  },
-});
 
 export default TextFieldLogin;

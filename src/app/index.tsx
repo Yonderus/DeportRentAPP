@@ -1,19 +1,15 @@
 import { StyleSheet, View } from "react-native";
+import LoginScreen from "./Auth/loginPage";
 import { GluestackUIProvider } from "@gluestack-ui/themed";
 import { PaperProvider } from "react-native-paper";
 import { config } from "@gluestack-ui/config";
 
-import { NavigationContainer } from "@react-navigation/native";
-import Navegador from "./src/navegacion/navegador";
-
-export default function App() {
+export default function Index() {
   return (
     <GluestackUIProvider config={config}>
       <PaperProvider>
         <View style={styles.container}>
-          <NavigationContainer>
-            <Navegador />
-          </NavigationContainer>
+          <LoginScreen />
         </View>
       </PaperProvider>
     </GluestackUIProvider>
