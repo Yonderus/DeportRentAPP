@@ -11,18 +11,19 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 
-import { Client } from "../../../data/clients";
+import { Cliente } from "../../../types/types";
 import { getClientById, updateClient, deleteClient } from "../../../services/clientsService";
 import ClienteDialog, { ClientForm } from "../../../components/clientsComponents/clientsDialog";
 import { useTemaStore } from "../preferencias";
 import { obtenerColores } from "../../../theme";
 
-const toForm = (c: Client): ClientForm => ({
-  name: c.name,
-  surname: c.surname,
+const toForm = (c: Cliente): ClientForm => ({
+  nombre: c.nombre,
+  nifCif: c.nifCif,
   email: c.email,
-  phone: c.phone,
-  pedidos: c.pedidos ?? [],
+  telefono: c.telefono,
+  notas: c.notas,
+  activo: c.activo,
 });
 
 export default function ClienteDetallado() {
@@ -31,24 +32,24 @@ export default function ClienteDetallado() {
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
 
-  const [cliente, setCliente] = useState<Client | null>(null);
+  const [cliente, setCliente] = useState<Cliente | null>(null);
   const [cargando, setCargando] = useState(true);
   const [editarVisible, setEditarVisible] = useState(false);
 
-  // ✅ estado del formulario (para que los inputs puedan cambiar)
   const [form, setForm] = useState<ClientForm>({
-    name: "",
-    surname: "",
+    nombre: "",
+    nifCif: "",
     email: "",
-    phone: "",
-    pedidos: [],
+    telefono: "",
+    notas: "",
+    activo: true,
   });
 
   const cargar = () => {
     setCargando(true);
     const c = getClientById(clientId);
     setCliente(c ?? null);
-    if (c) setForm(toForm(c)); // ✅ rellena el form con el cliente actual
+    if (c) setForm(toForm(c)); 
     setCargando(false);
   };
 
@@ -95,7 +96,7 @@ export default function ClienteDetallado() {
       <View style={s.header}>
         <Feather name="user" size={32} color={colores.btnPrimario} />
         <Text style={[s.name, { color: colores.textoPrincipal }]}>
-          {cliente.name} {cliente.surname}
+          {cliente.nombre}
         </Text>
       </View>
 
@@ -107,25 +108,32 @@ export default function ClienteDetallado() {
 
         <View style={s.row}>
           <Feather name="phone" size={18} color={colores.iconoColorGris} />
-          <Text style={[s.value, { color: colores.textoSecundario }]}>{cliente.phone}</Text>
+          <Text style={[s.value, { color: colores.textoSecundario }]}>{cliente.telefono || "-"}</Text>
         </View>
+
+        {cliente.nifCif && (
+          <View style={s.row}>
+            <Feather name="layers" size={18} color={colores.iconoColorGris} />
+            <Text style={[s.value, { color: colores.textoSecundario }]}>{cliente.nifCif}</Text>
+          </View>
+        )}
+
+        {cliente.notas && (
+          <View style={s.row}>
+            <Feather name="file-text" size={18} color={colores.iconoColorGris} />
+            <Text style={[s.value, { color: colores.textoSecundario }]}>{cliente.notas}</Text>
+          </View>
+        )}
       </View>
 
       <View style={{ paddingHorizontal: 16 }}>
-        <Text style={[s.sectionTitle, { color: colores.textoPrincipal }]}>Pedidos</Text>
+        <Text style={[s.sectionTitle, { color: colores.textoPrincipal }]}>Estado</Text>
       </View>
 
       <View style={[s.card, { backgroundColor: colores.fondoCard }]}>
-        {cliente.pedidos.length === 0 ? (
-          <Text style={[s.empty, { color: colores.textoSecundario }]}>Este cliente no tiene pedidos</Text>
-        ) : (
-          cliente.pedidos.map((p, i) => (
-            <View key={i} style={s.pedido}>
-              <Feather name="shopping-bag" size={16} color={colores.btnPrimario} />
-              <Text style={[s.pedidoText, { color: colores.textoSecundario }]}>{p}</Text>
-            </View>
-          ))
-        )}
+        <Text style={[s.value, { color: colores.textoSecundario }]}>
+          {cliente.activo ? "✓ Cliente activo" : "✗ Cliente inactivo"}
+        </Text>
       </View>
 
       <TouchableOpacity

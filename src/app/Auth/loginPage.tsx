@@ -1,6 +1,6 @@
-import React from "react";
-import { StyleSheet } from "react-native";
-import { Box, Button, ButtonText, Text, Pressable, Center } from "@gluestack-ui/themed";
+import React, { useState } from "react";
+import { StyleSheet, Alert, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform } from "react-native";
+import { Box, Button, ButtonText, Text, Pressable } from "@gluestack-ui/themed";
 import { Avatar } from "react-native-paper";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -8,20 +8,47 @@ import { router } from "expo-router";
 import TextFieldLogin from "../../components/textFieldLogin";
 import { useTemaStore } from "../(tabs)/preferencias";
 import { obtenerColores } from "../../theme";
+import { useUsuarioStore } from "../../stores/useUsuarioStore";
+import { validarLogin } from "../../services/authService";
 
 export default function LoginPage() {
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
+  const { login } = useUsuarioStore();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    setLoading(true);
+
+    const resultado = validarLogin(email, password);
+
+    if (resultado.success && resultado.usuario) {
+      await login(resultado.usuario);
+      router.replace("(tabs)");
+    } else {
+      Alert.alert("Error de inicio de sesión", resultado.message);
+    }
+
+    setLoading(false);
+  };
 
   return (
-    <Center style={[styles.container, { backgroundColor: colores.fondoPrincipal }]}>
-      <Box style={[styles.card, { backgroundColor: colores.fondoCard, borderColor: colores.borde }]}>
-        <Avatar.Icon 
-          size={80} 
-          icon="lock" 
-          color={colores.avatarIcono} 
-          style={[styles.avatar, { backgroundColor: colores.avatarFondo }]} 
-        />
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={[styles.container, { backgroundColor: colores.fondoPrincipal }]}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <Box style={styles.innerContainer}>
+          <Box style={[styles.card, { backgroundColor: colores.fondoCard, borderColor: colores.borde }]}>
+          <Avatar.Icon 
+            size={80} 
+            icon="lock" 
+            color={colores.avatarIcono} 
+            style={[styles.avatar, { backgroundColor: colores.avatarFondo }]} 
+          />
 
         <Box style={styles.header}>
           <Text style={[styles.title, { color: colores.textoPrincipal }]}>Bienvenido</Text>
@@ -33,6 +60,8 @@ export default function LoginPage() {
           <TextFieldLogin
             placeholder="nombre@ejemplo.com"
             icon={<Feather name="mail" size={20} color={colores.iconoColorGris} />}
+            value={email}
+            onChangeText={setEmail}
           />
         </Box>
 
@@ -48,11 +77,19 @@ export default function LoginPage() {
             icon={<Feather name="lock" size={20} color={colores.iconoColorGris} />}
             placeholder="********"
             secure
+            value={password}
+            onChangeText={setPassword}
           />
         </Box>
 
-        <Button style={[styles.primaryBtn, { backgroundColor: colores.btnPrimario }]} onPress={() => router.replace("(tabs)")}>
-          <ButtonText style={styles.primaryText}>Iniciar sesión</ButtonText>
+        <Button 
+          style={[styles.primaryBtn, { backgroundColor: colores.btnPrimario }]} 
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          <ButtonText style={styles.primaryText}>
+            {loading ? "Iniciando..." : "Iniciar sesión"}
+          </ButtonText>
         </Button>
 
         <Text style={[styles.centerText, { color: colores.textoSecundario }]}>O continúa con</Text>
@@ -71,15 +108,23 @@ export default function LoginPage() {
           </Pressable>
         </Box>
       </Box>
-    </Center>
+        </Box>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
     backgroundColor: "#f6f7fb",
+  },
+
+  innerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
   },
 
   card: {

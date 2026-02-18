@@ -1,21 +1,20 @@
 import React from "react";
 import { Pressable, View, Text, StyleSheet } from "react-native";
 import { Avatar } from "react-native-paper";
-import { Client } from "../../data/clients";
+import { Cliente } from "../../types/types";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
 import { obtenerColores } from "../../theme";
 
 type Props = {
-  client: Client;
-  onPress: (client: Client) => void;
+  client: Cliente;
+  onPress: (client: Cliente) => void;
 };
 
 export default function ClienteItem({ client, onPress }: Props) {
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
   
-  const iniciales =
-    (client.name?.charAt(0) ?? "") + (client.surname?.charAt(0) ?? "");
+  const iniciales = client.nombre?.charAt(0) ?? "";
 
   return (
     <Pressable
@@ -31,10 +30,10 @@ export default function ClienteItem({ client, onPress }: Props) {
 
       <View style={s.info}>
         <Text style={[s.name, { color: colores.textoPrincipal }]}>
-          {client.name} {client.surname}
+          {client.nombre}
         </Text>
 
-        <Text style={[s.secondary, { color: colores.textoSecundario }]}>{client.phone}</Text>
+        <Text style={[s.secondary, { color: colores.textoSecundario }]}>{client.telefono}</Text>
 
         {client.email ? (
           <Text style={[s.secondary, { color: colores.textoSecundario }]} numberOfLines={1}>
@@ -63,6 +62,7 @@ const s = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     elevation: 3,
   },
+  
   pressed: { opacity: 0.85 },
   avatar: { marginRight: 12 },
   avatarText: { fontWeight: "800", color: "white" },

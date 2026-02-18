@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList } from "react-native";
 import { FAB } from "react-native-paper";
 import { router, useFocusEffect } from "expo-router";
 
-import { Client } from "../../data/clients";
+import { Cliente } from "../../types/types";
 import { getClients, addClient, updateClient } from "../../services/clientsService";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
 import { obtenerColores } from "../../theme";
@@ -12,15 +12,16 @@ import ClienteItem from "./clientsItem";
 import ClienteDialog, { ClientForm } from "./clientsDialog";
 
 const crearClienteVacio = (): ClientForm => ({
-  name: "",
-  surname: "",
+  nombre: "",
+  telefono: "",
   email: "",
-  phone: "",
-  pedidos: [],
+  nifCif: "",
+  notas: "",
+  activo: true,
 });
 
 export default function ClientsCard() {
-  const [clients, setClients] = useState<Client[]>([]);
+  const [clients, setClients] = useState<Cliente[]>([]);
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
 
@@ -44,14 +45,15 @@ export default function ClientsCard() {
     setFormVisible(true);
   };
 
-  const abrirEditar = (client: Client) => {
+  const abrirEditar = (client: Cliente) => {
     setEditingId(client.id);
     setForm({
-      name: client.name,
-      surname: client.surname,
+      nombre: client.nombre,
+      telefono: client.telefono,
       email: client.email,
-      phone: client.phone,
-      pedidos: client.pedidos ?? [],
+      nifCif: client.nifCif,
+      notas: client.notas,
+      activo: client.activo,
     });
     setFormVisible(true);
   };
