@@ -15,7 +15,12 @@ export default function PreferenciasLayout() {
         headerTitleStyle: { color: colores.textoPrincipal, fontWeight: "700" },
       }}
     >
-
+      <Stack.Screen
+        name="index"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }

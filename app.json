@@ -32,6 +32,6 @@
     "plugins": [
       "expo-router"
     ],
-     "jsEngine": "hermes"
+    "jsEngine": "hermes"
   }
 }

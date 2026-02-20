@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { Text, Card, Avatar } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import { useTemaStore } from "../preferencias/index";
 import { obtenerColores } from "../../../theme";
 import { useUsuarioStore } from "../../../stores/useUsuarioStore";
+import { getSignedAvatarUrl } from "../../../services/authService";
 
 interface MenuCard {
   title: string;
@@ -45,7 +46,7 @@ const menuOptions: MenuCard[] = [
     title: "Preferencias",
     description: "Configuración de la aplicación",
     icon: "cog",
-    route: "/preferencias",
+    route: "/perfil/preferencias",
     color: "#6B7280",
     rolesPermitidos: ['ADMIN', 'NORMAL'],
   },
@@ -55,7 +56,8 @@ export default function InicioScreen() {
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
   const router = useRouter();
-  const { nombreVisible, email, rol } = useUsuarioStore();
+  const { nombreVisible, email, rol, avatarPath, avatarUpdatedAt } = useUsuarioStore();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const opcionesDisponibles = menuOptions.filter(
     (option) => !option.rolesPermitidos || option.rolesPermitidos.includes(rol as 'NORMAL' | 'ADMIN')
@@ -75,16 +77,51 @@ export default function InicioScreen() {
       .substring(0, 2);
   };
 
+  // Refresca la URL firmada cuando cambia el avatar.
+  useEffect(() => {
+    let mounted = true;
+
+    const loadAvatar = async () => {
+      // Si no hay path, usar avatar por iniciales.
+      if (!avatarPath) {
+        setAvatarUrl(null);
+        return;
+      }
+
+      try {
+        // URL firmada temporal para buckets privados.
+        const signedUrl = await getSignedAvatarUrl(avatarPath);
+        if (mounted) setAvatarUrl(signedUrl);
+      } catch (error) {
+        console.warn("No se pudo cargar el avatar en inicio:", error);
+        if (mounted) setAvatarUrl(null);
+      }
+    };
+
+    loadAvatar();
+
+    return () => {
+      mounted = false;
+    };
+  }, [avatarPath, avatarUpdatedAt]);
+
   return (
     <ScrollView style={[styles.container, { backgroundColor: colores.fondoPrincipal }]}>
       {/* Header con información del usuario */}
       <View style={[styles.header, { backgroundColor: colores.btnPrimario }]}>
         <View style={styles.userInfo}>
-          <Avatar.Text 
-            size={64} 
-            label={getInitials(nombreVisible)} 
-            style={styles.avatar}
-          />
+          {avatarUrl ? (
+            <Avatar.Image
+              size={64}
+              source={{ uri: avatarUrl }}
+            />
+          ) : (
+            <Avatar.Text 
+              size={64} 
+              label={getInitials(nombreVisible)} 
+              style={styles.avatar}
+            />
+          )}
           <View style={styles.userDetails}>
             <Text style={styles.welcomeText}>Bienvenido/a</Text>
             <Text style={styles.userName}>{nombreVisible || "Usuario"}</Text>
