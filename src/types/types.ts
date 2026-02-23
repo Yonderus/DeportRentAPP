@@ -58,6 +58,7 @@ export interface Producto {
   descripcion?: string;
   precioDia: number; // precio por unidad y día
   precioVenta?: number | null;
+  imagePath?: string | null;
   activo: boolean;
 }
 

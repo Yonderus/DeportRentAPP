@@ -7,8 +7,10 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   Keyboard,
+  Image,
 } from "react-native";
 import { Button, TextInput, Text, Switch } from "react-native-paper";
+import * as ImagePicker from "expo-image-picker";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
 import { obtenerColores } from "../../styles/theme";
 import { styles } from "../../styles/components/productsDialog.styles";
@@ -19,6 +21,10 @@ export type ProductForm = {
   precioDia: string;
   precioVenta: string;
   activo: boolean;
+  imageUri?: string;
+  imageBase64?: string;
+  imageExt?: string;
+  imageMime?: string;
 };
 
 type Props = {
@@ -45,6 +51,28 @@ export default function ProductsDialog({
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
 
+  const seleccionarImagen = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.85,
+      base64: true,
+    });
+
+    if (result.canceled || !result.assets?.length) return;
+
+    const asset = result.assets[0];
+    onChange({
+      ...value,
+      imageUri: asset.uri,
+      imageBase64: asset.base64 ?? value.imageBase64,
+      imageExt: asset.fileName?.split(".").pop() ?? value.imageExt,
+      imageMime: asset.mimeType ?? value.imageMime,
+    });
+  };
+
   const aceptar = () => {
     if (saving) return;
     if (!value.nombre.trim()) return;
@@ -67,6 +95,15 @@ export default function ProductsDialog({
               </Text>
 
               <ScrollView keyboardShouldPersistTaps="handled">
+                <Text style={[styles.switchLabel, { color: colores.textoPrincipal }]}>Imagen</Text>
+                <View style={styles.imageRow}>
+                  <Button mode="outlined" onPress={seleccionarImagen}>
+                    Seleccionar imagen
+                  </Button>
+                  {value.imageUri ? (
+                    <Image source={{ uri: value.imageUri }} style={styles.imagePreview} />
+                  ) : null}
+                </View>
 
                 <Text style={[styles.switchLabel, { color: colores.textoPrincipal }]}>Nombre</Text>
                 <TextInput

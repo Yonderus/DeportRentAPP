@@ -30,4 +30,10 @@ export const styles = StyleSheet.create({
   deleteButton: {
     marginTop: 12,
   },
+  buttonSpacer: {
+    height: 10,
+  },
+  closeButton: {
+    marginTop: 0,
+  },
 });

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { ActivityIndicator, FlatList, View, Text } from "react-native";
 import { FAB } from "react-native-paper";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -13,6 +13,8 @@ import {
   addTallaProducto,
   updateTallaProducto,
   deleteTallaProducto,
+  uploadProductoImage,
+  getSignedProductImageUrl,
 } from "../../services/productosService";
 import { Producto, TallaProducto } from "../../types/types";
 import { useUsuarioStore } from "../../stores/useUsuarioStore";
@@ -36,12 +38,17 @@ export default function ProductosScreen() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null);
   const [editingSizeId, setEditingSizeId] = useState<number | null>(null);
+  const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
   const [form, setForm] = useState<ProductForm>({
     nombre: "",
     descripcion: "",
     precioDia: "",
     precioVenta: "",
     activo: true,
+    imageUri: "",
+    imageBase64: "",
+    imageExt: "",
+    imageMime: "",
   });
   const [sizeForm, setSizeForm] = useState<SizeForm>({
     codigoTalla: "",
@@ -79,6 +86,39 @@ export default function ProductosScreen() {
       });
     return map;
   }, [tallas]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadImages = async () => {
+      const entries = await Promise.all(
+        productos
+          .filter((producto) => producto.imagePath)
+          .map(async (producto) => {
+            try {
+              const url = await getSignedProductImageUrl(producto.imagePath as string);
+              return [producto.id, url] as const;
+            } catch {
+              return [producto.id, null] as const;
+            }
+          })
+      );
+
+      if (!mounted) return;
+
+      const map: Record<number, string> = {};
+      entries.forEach(([id, url]) => {
+        if (url) map[id] = url;
+      });
+      setImageUrls(map);
+    };
+
+    loadImages();
+
+    return () => {
+      mounted = false;
+    };
+  }, [productos]);
 
   const isLoading = isLoadingProductos || isLoadingTallas;
   const isError = isErrorProductos || isErrorTallas;
@@ -213,6 +253,10 @@ export default function ProductosScreen() {
       precioDia: "",
       precioVenta: "",
       activo: true,
+      imageUri: "",
+      imageBase64: "",
+      imageExt: "",
+      imageMime: "",
     });
     setFormVisible(true);
   };
@@ -225,6 +269,10 @@ export default function ProductosScreen() {
       precioDia: String(producto.precioDia ?? ""),
       precioVenta: producto.precioVenta ? String(producto.precioVenta) : "",
       activo: producto.activo,
+      imageUri: "",
+      imageBase64: "",
+      imageExt: "",
+      imageMime: "",
     });
     setFormVisible(true);
   };
@@ -233,20 +281,34 @@ export default function ProductosScreen() {
     const precioDia = Number(data.precioDia.replace(",", "."));
     const precioVenta = data.precioVenta.trim()
       ? Number(data.precioVenta.replace(",", "."))
-      : null;
+      : 0;
 
     const payload: Omit<Producto, "id"> = {
       nombre: data.nombre.trim(),
       descripcion: data.descripcion.trim() ? data.descripcion.trim() : undefined,
       precioDia: Number.isFinite(precioDia) ? precioDia : 0,
-      precioVenta: Number.isFinite(precioVenta ?? 0) ? precioVenta : null,
+      precioVenta: Number.isFinite(precioVenta) ? precioVenta : 0,
       activo: data.activo,
     };
 
     if (editingId === null) {
-      await createMutation.mutateAsync(payload);
+      const created = await createMutation.mutateAsync(payload);
+      if (data.imageBase64) {
+        const imagePath = await uploadProductoImage(created.id, data.imageBase64, {
+          extension: data.imageExt,
+          mimeType: data.imageMime,
+        });
+        await updateMutation.mutateAsync({ id: created.id, data: { imagePath } });
+      }
     } else {
       await updateMutation.mutateAsync({ id: editingId, data: payload });
+      if (data.imageBase64) {
+        const imagePath = await uploadProductoImage(editingId, data.imageBase64, {
+          extension: data.imageExt,
+          mimeType: data.imageMime,
+        });
+        await updateMutation.mutateAsync({ id: editingId, data: { imagePath } });
+      }
     }
 
     setFormVisible(false);
@@ -298,6 +360,7 @@ export default function ProductosScreen() {
       <View>
         <ProductsItem
           producto={item}
+          imageUrl={imageUrls[item.id]}
           onPress={
             isAdmin
               ? (producto) => {

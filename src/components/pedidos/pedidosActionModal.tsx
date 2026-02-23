@@ -11,7 +11,6 @@ type Props = {
   pedido: PedidoListItem | null;
   onClose: () => void;
   onEdit: (pedido: PedidoListItem) => void;
-  onChangeEstado: (pedido: PedidoListItem) => void;
   onDelete: (id: number) => void;
 };
 
@@ -20,7 +19,6 @@ export default function PedidosActionModal({
   pedido,
   onClose,
   onEdit,
-  onChangeEstado,
   onDelete,
 }: Props) {
   const tema = useTemaStore((s) => s.tema);
@@ -70,9 +68,6 @@ export default function PedidosActionModal({
           ) : null}
 
           <View style={styles.row}>
-            <Button mode="text" onPress={() => onChangeEstado(pedido)}>
-              Cambiar estado
-            </Button>
             <Button mode="contained" onPress={() => onEdit(pedido)} disabled={isFinalizado}>
               Editar
             </Button>
@@ -87,7 +82,9 @@ export default function PedidosActionModal({
             Eliminar
           </Button>
 
-          <Button mode="contained-tonal" onPress={onClose}>
+          <View style={styles.buttonSpacer} />
+
+          <Button mode="contained-tonal" onPress={onClose} style={styles.closeButton}>
             Cerrar
           </Button>
         </TouchableOpacity>

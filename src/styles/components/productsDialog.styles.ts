@@ -33,4 +33,16 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
+  imageRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginTop: 6,
+    marginBottom: 6,
+  },
+  imagePreview: {
+    width: 54,
+    height: 54,
+    borderRadius: 10,
+  },
 });

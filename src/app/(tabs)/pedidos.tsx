@@ -286,10 +286,6 @@ export default function PedidosScreen() {
           setActionsVisible(false);
           abrirEditar(pedido);
         }}
-        onChangeEstado={(pedido) => {
-          setActionsVisible(false);
-          abrirCambiarEstado(pedido);
-        }}
         onDelete={(id) => deleteMutation.mutate(id)}
       />
     </View>
