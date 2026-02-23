@@ -1,7 +1,7 @@
 import React from "react";
 import { Stack, useRouter } from "expo-router";
 import { useTemaStore } from "../preferencias";
-import { obtenerColores } from "../../../theme";
+import { obtenerColores } from "../../../styles/theme";
 import { useUsuarioStore } from "../../../stores/useUsuarioStore";
 
 export default function Layout() {

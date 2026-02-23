@@ -1,7 +1,7 @@
 import React from "react";
 import { Stack } from "expo-router";
 import { useTemaStore } from "../preferencias/index";
-import { obtenerColores } from "../../../theme";
+import { obtenerColores } from "../../../styles/theme";
 
 export default function PerfilLayout() {
   const tema = useTemaStore((s) => s.tema);

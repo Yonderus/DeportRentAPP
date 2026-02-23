@@ -4,7 +4,7 @@ import { Avatar, Button, Card, Divider, IconButton, List, Text, TextInput } from
 import { router } from "expo-router";
 import { useUsuarioStore } from "../../../stores/useUsuarioStore";
 import { useTemaStore } from "../preferencias/index";
-import { obtenerColores } from "../../../theme";
+import { obtenerColores } from "../../../styles/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getSignedAvatarUrl, uploadAvatarForUser } from "../../../services/authService";
 import * as ImagePicker from "expo-image-picker";

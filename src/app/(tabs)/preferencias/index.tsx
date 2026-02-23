@@ -4,7 +4,7 @@ import { Card, Switch, Text } from "react-native-paper";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { TemaApp, obtenerColores } from "../../../theme";
+import { TemaApp, obtenerColores } from "../../../styles/theme";
 
 type PreferenciasState = {
   tema: TemaApp;

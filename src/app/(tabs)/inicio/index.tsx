@@ -4,7 +4,7 @@ import { Text, Card, Avatar } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTemaStore } from "../preferencias/index";
-import { obtenerColores } from "../../../theme";
+import { obtenerColores } from "../../../styles/theme";
 import { useUsuarioStore } from "../../../stores/useUsuarioStore";
 import { getSignedAvatarUrl } from "../../../services/authService";
 
