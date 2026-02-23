@@ -15,9 +15,11 @@ const STYLES = ['default', 'dark-content', 'light-content'] as const;
 export default function TabLayout() {
   const tema = useTemaStore((s) => s.tema);
   const isLoggedIn = useUsuarioStore((s) => s.isLoggedIn);
+  const rol = useUsuarioStore((s) => s.rol);
   const { isLoading } = useAuth();
   const router = useRouter();
   const colores = obtenerColores(tema);
+  const isAdmin = rol === "ADMIN";
   const [statusBarStyle, setStatusBarStyle] = React.useState<StatusBarStyle>(
     STYLES[0],
   );
@@ -73,6 +75,17 @@ export default function TabLayout() {
         /> */}
 
         <Tabs.Screen
+          name="productos"
+          options={{
+            title: "Productos",
+            href: undefined,
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="basket" color={color} size={size} />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
           name="pedidos"
           options={{
             title: "Pedidos",
@@ -84,6 +97,7 @@ export default function TabLayout() {
           name="clientes"
           options={{
             title: "Clientes",
+            href: isAdmin ? undefined : null,
             tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons name="account-group" color={color} size={size} />
             ),

@@ -1,11 +1,24 @@
 import React from "react";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useTemaStore } from "../preferencias";
 import { obtenerColores } from "../../../theme";
+import { useUsuarioStore } from "../../../stores/useUsuarioStore";
 
 export default function Layout() {
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
+  const rol = useUsuarioStore((s) => s.rol);
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (rol && rol !== "ADMIN") {
+      router.replace("/(tabs)");
+    }
+  }, [rol, router]);
+
+  if (rol && rol !== "ADMIN") {
+    return null;
+  }
 
   return (
     <Stack
