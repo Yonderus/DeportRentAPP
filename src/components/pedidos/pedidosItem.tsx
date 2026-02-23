@@ -7,12 +7,13 @@ import { styles } from "../../styles/components/pedidosItem.styles";
 
 type Props = {
   pedido: PedidoListItem;
-  onPress: (pedido: PedidoListItem) => void;
+  onPress?: (pedido: PedidoListItem) => void;
 };
 
 export default function PedidosItem({ pedido, onPress }: Props) {
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
+  const isFinalizado = pedido.estado === "FINALIZADO";
 
   const clienteLabel = pedido.clienteNombre
     ? pedido.clienteNombre
@@ -20,10 +21,12 @@ export default function PedidosItem({ pedido, onPress }: Props) {
 
   return (
     <Pressable
-      onPress={() => onPress(pedido)}
+      onPress={onPress ? () => onPress(pedido) : undefined}
+      disabled={!onPress}
       style={({ pressed }) => [
         styles.card,
         { backgroundColor: colores.fondoCard },
+        isFinalizado && styles.disabled,
         pressed && styles.pressed,
       ]}
     >

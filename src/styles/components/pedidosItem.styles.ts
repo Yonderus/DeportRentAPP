@@ -6,6 +6,9 @@ export const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
   },
+  disabled: {
+    opacity: 0.55,
+  },
   pressed: { opacity: 0.85 },
   row: {
     flexDirection: "row",

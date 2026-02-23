@@ -3,28 +3,31 @@ import { Pedido } from "../types/types";
 
 export type PedidoListItem = Pick<
 	Pedido,
-	"id" | "codigo" | "tipo" | "clienteId" | "fechaInicio" | "fechaFin" | "estado"
+	"id" | "codigo" | "tipo" | "clienteId" | "fechaInicio" | "fechaFin" | "estado" | "notas"
 > & {
 	clienteNombre?: string | null;
 };
 
-const toDbPedido = (data: Partial<Omit<Pedido, "id">>) => ({
-	codigo: data.codigo,
-	tipo: data.tipo,
-	cliente_id: data.clienteId,
-	direccion_entrega_id: data.direccionEntregaId,
-	direccion_recogida_id: data.direccionRecogidaId,
-	fecha_inicio: data.fechaInicio,
-	fecha_fin: data.fechaFin,
-	estado: data.estado,
-	creado_por: data.creadoPor,
-	notas: data.notas,
-});
+const toDbPedido = (data: Partial<Omit<Pedido, "id">>) =>
+	Object.fromEntries(
+		Object.entries({
+			codigo: data.codigo,
+			tipo: data.tipo,
+			cliente_id: data.clienteId,
+			direccion_entrega_id: data.direccionEntregaId,
+			direccion_recogida_id: data.direccionRecogidaId,
+			fecha_inicio: data.fechaInicio,
+			fecha_fin: data.fechaFin,
+			estado: data.estado,
+			creado_por: data.creadoPor,
+			notas: data.notas,
+		}).filter(([, value]) => value !== undefined)
+	);
 
 export const getPedidos = async (): Promise<PedidoListItem[]> => {
 	const { data, error } = await supabase
 		.from("pedidos")
-		.select("id,codigo,tipo,clienteId:cliente_id,fechaInicio:fecha_inicio,fechaFin:fecha_fin,estado")
+		.select("id,codigo,tipo,clienteId:cliente_id,fechaInicio:fecha_inicio,fechaFin:fecha_fin,estado,notas")
 		.order("fecha_inicio", { ascending: false });
 
 	if (error) throw new Error(error.message);
