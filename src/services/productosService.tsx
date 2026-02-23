@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../utils/supabaseClient";
 import { Producto, TallaProducto } from "../types/types";
 
 const toDbProducto = (data: Partial<Omit<Producto, "id">>) => ({

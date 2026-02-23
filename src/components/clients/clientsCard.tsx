@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { ActivityIndicator, View, Text, StyleSheet, FlatList } from "react-native";
+import { ActivityIndicator, View, Text, FlatList } from "react-native";
 import { FAB } from "react-native-paper";
 import { router } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -7,7 +7,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Cliente } from "../../types/types";
 import { getClients, addClient, updateClient } from "../../services/clientsService";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
-import { obtenerColores } from "../../theme";
+import { obtenerColores } from "../../styles/theme";
+import { styles } from "../../styles/components/clientsCard.styles";
 
 import ClienteItem from "./clientsItem";
 import ClienteDialog, { ClientForm } from "./clientsDialog";
@@ -124,26 +125,26 @@ export default function ClientsCard() {
   }, [isLoading, isError, error, clients.length]);
 
   return (
-    <View style={[s.page, { backgroundColor: colores.fondoPrincipal }]}>
-      <View style={s.header}>
-        <Text style={[s.title, { color: colores.textoPrincipal }]}>Clientes</Text>
-        <Text style={[s.subtitle, { color: colores.textoSecundario }]}>Pulsa un cliente para ver detalles</Text>
+    <View style={[styles.page, { backgroundColor: colores.fondoPrincipal }]}>
+      <View style={styles.header}>
+        <Text style={[styles.title, { color: colores.textoPrincipal }]}>Clientes</Text>
+        <Text style={[styles.subtitle, { color: colores.textoSecundario }]}>Pulsa un cliente para ver detalles</Text>
       </View>
 
       {isLoading ? (
-        <View style={s.loadingState}>
+        <View style={styles.loadingState}>
           <ActivityIndicator size="large" color={colores.btnPrimario} />
-          <Text style={[s.emptyText, { color: colores.textoSecundario }]}>Cargando clientes...</Text>
+          <Text style={[styles.emptyText, { color: colores.textoSecundario }]}>Cargando clientes...</Text>
         </View>
       ) : statusMessage ? (
-        <View style={s.emptyState}>
-          <Text style={[s.emptyText, { color: colores.textoSecundario }]}>{statusMessage}</Text>
+        <View style={styles.emptyState}>
+          <Text style={[styles.emptyText, { color: colores.textoSecundario }]}>{statusMessage}</Text>
         </View>
       ) : (
         <FlatList
           data={clients}
           keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={s.list}
+          contentContainerStyle={styles.list}
           renderItem={({ item }) => (
             <ClienteItem
               client={item}
@@ -155,7 +156,7 @@ export default function ClientsCard() {
 
       <FAB
         icon="plus"
-        style={[s.fab, { backgroundColor: colores.fabColor }]}
+        style={[styles.fab, { backgroundColor: colores.fabColor }]}
         onPress={abrirCrear}
         disabled={createMutation.isPending || updateMutation.isPending}
       />
@@ -173,14 +174,3 @@ export default function ClientsCard() {
   );
 }
 
-const s = StyleSheet.create({
-  page: { flex: 1 },
-  header: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 },
-  title: { fontSize: 26, fontWeight: "800" },
-  subtitle: { fontSize: 15, marginTop: 2 },
-  list: { paddingHorizontal: 16, paddingBottom: 100 },
-  loadingState: { paddingHorizontal: 16, paddingVertical: 24, alignItems: "center", gap: 12 },
-  emptyState: { paddingHorizontal: 16, paddingVertical: 24 },
-  emptyText: { fontSize: 14 },
-  fab: { position: "absolute", right: 16, bottom: 16 },
-});

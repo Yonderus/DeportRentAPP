@@ -1,9 +1,10 @@
 import React from "react";
-import { Modal, View, StyleSheet, Alert, TouchableOpacity } from "react-native";
+import { Modal, View, Alert, TouchableOpacity } from "react-native";
 import { Button, Text } from "react-native-paper";
 import { Producto } from "../../types/types";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
-import { obtenerColores } from "../../theme";
+import { obtenerColores } from "../../styles/theme";
+import { styles } from "../../styles/components/productsActionModal.styles";
 
 type Props = {
   visible: boolean;
@@ -43,18 +44,18 @@ export default function ProductsActionModal({
 
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
-      <TouchableOpacity style={[s.backdrop, { backgroundColor: "rgba(0,0,0,0.4)" }]} activeOpacity={1} onPress={onClose}>
-        <TouchableOpacity style={[s.card, { backgroundColor: colores.fondoCard }]} activeOpacity={1}>
-          <Text variant="titleMedium" style={[s.title, { color: colores.textoPrincipal }]}>
+      <TouchableOpacity style={[styles.backdrop, { backgroundColor: "rgba(0,0,0,0.4)" }]} activeOpacity={1} onPress={onClose}>
+        <TouchableOpacity style={[styles.card, { backgroundColor: colores.fondoCard }]} activeOpacity={1}>
+          <Text variant="titleMedium" style={[styles.title, { color: colores.textoPrincipal }]}>
             {producto.nombre}
           </Text>
 
-          <Text style={[s.line, { color: colores.textoSecundario }]}>Precio dia: {producto.precioDia} EUR</Text>
+          <Text style={[styles.line, { color: colores.textoSecundario }]}>Precio dia: {producto.precioDia} EUR</Text>
           {producto.precioVenta ? (
-            <Text style={[s.line, { color: colores.textoSecundario }]}>Precio venta: {producto.precioVenta} EUR</Text>
+            <Text style={[styles.line, { color: colores.textoSecundario }]}>Precio venta: {producto.precioVenta} EUR</Text>
           ) : null}
 
-          <View style={s.row}>
+          <View style={styles.row}>
             <Button mode="text" onPress={confirmarBorrado}>
               Eliminar
             </Button>
@@ -76,27 +77,3 @@ export default function ProductsActionModal({
   );
 }
 
-const s = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 16,
-  },
-  card: {
-    borderRadius: 12,
-    padding: 14,
-  },
-  title: {
-    fontWeight: "800",
-    marginBottom: 10,
-  },
-  line: {
-    marginTop: 6,
-  },
-  row: {
-    marginTop: 14,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-});

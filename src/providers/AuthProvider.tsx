@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 // Cliente Supabase para escuchar cambios de sesión.
 // Esto permite reaccionar automáticamente a login/logout.
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../utils/supabaseClient";
 // Store global de usuario (Zustand), fuente única del estado de auth en UI.
 import { useUsuarioStore } from "../stores/useUsuarioStore";
 

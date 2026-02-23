@@ -1,7 +1,7 @@
 // Servicios de autenticación y perfil (Supabase).
 // Aquí centralizamos llamadas a Auth y a la tabla profiles para mantener
 // un único punto de acceso y evitar lógica duplicada en componentes.
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../utils/supabaseClient";
 import Constants from "expo-constants";
 import { decode } from "base64-arraybuffer";
 

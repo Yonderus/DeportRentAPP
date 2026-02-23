@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, StyleSheet, View, Text } from "react-native";
+import { ActivityIndicator, FlatList, View, Text } from "react-native";
 import { FAB } from "react-native-paper";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTemaStore } from "./preferencias";
-import { obtenerColores } from "../../theme";
+import { obtenerColores } from "../../styles/theme";
 import {
   getProductos,
   getTallasProducto,
@@ -16,11 +16,12 @@ import {
 } from "../../services/productosService";
 import { Producto, TallaProducto } from "../../types/types";
 import { useUsuarioStore } from "../../stores/useUsuarioStore";
-import ProductsItem from "../../components/productsComponents/productsItem";
-import ProductsDialog, { ProductForm } from "../../components/productsComponents/productsDialog";
-import ProductsActionModal from "../../components/productsComponents/productsActionModal";
-import ProductSizeDialog, { SizeForm } from "../../components/productsComponents/productSizeDialog";
-import ProductSizesModal from "../../components/productsComponents/productSizesModal";
+import ProductsItem from "../../components/products/productsItem";
+import ProductsDialog, { ProductForm } from "../../components/products/productsDialog";
+import ProductsActionModal from "../../components/products/productsActionModal";
+import ProductSizeDialog, { SizeForm } from "../../components/products/productSizeDialog";
+import ProductSizesModal from "../../components/products/productSizesModal";
+import { styles } from "../../styles/app/productos.styles";
 
 export default function ProductosScreen() {
   const tema = useTemaStore((s) => s.tema);
@@ -297,10 +298,14 @@ export default function ProductosScreen() {
       <View>
         <ProductsItem
           producto={item}
-          onPress={isAdmin ? (producto) => {
-            setSelectedProduct(producto);
-            setActionsVisible(true);
-          } : undefined}
+          onPress={
+            isAdmin
+              ? (producto) => {
+                  setSelectedProduct(producto);
+                  setActionsVisible(true);
+                }
+              : undefined
+          }
         />
         {tallas ? (
           <Text style={[styles.sizes, { color: colores.textoTerciario }]}>Tallas: {tallas}</Text>
@@ -393,40 +398,3 @@ export default function ProductosScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "800",
-    marginBottom: 12,
-  },
-  listContent: {
-    paddingBottom: 100,
-  },
-  sizes: {
-    fontSize: 12,
-    marginTop: 2,
-    marginBottom: 10,
-    marginLeft: 12,
-  },
-  centerState: {
-    paddingHorizontal: 16,
-    paddingVertical: 24,
-    alignItems: "center",
-    gap: 12,
-  },
-  stateText: {
-    fontSize: 14,
-    textAlign: "center",
-  },
-  fab: {
-    position: "absolute",
-    right: 16,
-    bottom: 16,
-  },
-});

@@ -1,6 +1,6 @@
 // Servicios CRUD de clientes en Supabase.
 // Todo acceso a la tabla clientes pasa por aquí para centralizar validaciones y mapeos.
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../utils/supabaseClient";
 import { Cliente } from "../types/types";
 
 // Mapeo de campos UI -> DB (nifCif -> nif_cif).

@@ -2,33 +2,38 @@ import React from "react";
 import {
   Modal,
   View,
-  StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import { Button, TextInput, Text } from "react-native-paper";
-import { Cliente } from "../../types/types";
+import { Button, TextInput, Text, Switch } from "react-native-paper";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
-import { obtenerColores } from "../../theme";
+import { obtenerColores } from "../../styles/theme";
+import { styles } from "../../styles/components/productsDialog.styles";
 
-export type ClientForm = Omit<Cliente, "id">;
+export type ProductForm = {
+  nombre: string;
+  descripcion: string;
+  precioDia: string;
+  precioVenta: string;
+  activo: boolean;
+};
 
 type Props = {
   visible: boolean;
   title: string;
-  value: ClientForm;
-  onChange: (v: ClientForm) => void;
+  value: ProductForm;
+  onChange: (v: ProductForm) => void;
   onCancel: () => void;
-  onSave: (v: ClientForm) => void;
+  onSave: (v: ProductForm) => void;
   saving?: boolean;
 };
 
 const RADIUS = 16;
 
-export default function ClienteDialog({
+export default function ProductsDialog({
   visible,
   title,
   value,
@@ -40,10 +45,10 @@ export default function ClienteDialog({
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
 
-  // Evitar doble submit mientras guarda
   const aceptar = () => {
     if (saving) return;
     if (!value.nombre.trim()) return;
+    if (!value.precioDia.trim()) return;
 
     onSave(value);
   };
@@ -51,70 +56,79 @@ export default function ClienteDialog({
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onCancel}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={[s.backdrop, { backgroundColor: "rgba(0,0,0,0.5)" }]}>
+        <View style={[styles.backdrop, { backgroundColor: "rgba(0,0,0,0.4)" }]}> 
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={{ width: "100%" }}
           >
-            <View style={[s.card, { backgroundColor: colores.fondoCard }]}>
-              <Text variant="titleMedium" style={[s.title, { color: colores.textoPrincipal }]}>
+            <View style={[styles.card, { backgroundColor: colores.fondoCard }]}> 
+              <Text variant="titleMedium" style={[styles.title, { color: colores.textoPrincipal }]}>
                 {title}
               </Text>
 
               <ScrollView keyboardShouldPersistTaps="handled">
+
+                <Text style={[styles.switchLabel, { color: colores.textoPrincipal }]}>Nombre</Text>
                 <TextInput
                   mode="outlined"
                   placeholder="Nombre"
                   value={value.nombre}
                   onChangeText={(t) => onChange({ ...value, nombre: t })}
-                  style={[s.input, { backgroundColor: colores.fondoInput }]}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
                   outlineStyle={{ borderRadius: RADIUS }}
-                  left={<TextInput.Icon icon="account" />}
                   textColor={colores.textoPrincipal}
                   placeholderTextColor={colores.textoSecundario}
                 />
 
+                <Text style={[styles.switchLabel, { color: colores.textoPrincipal }]}>Descripcion (opcional)</Text>
                 <TextInput
                   mode="outlined"
-                  placeholder="NIF/CIF (opcional)"
-                  value={value.nifCif}
-                  onChangeText={(t) => onChange({ ...value, nifCif: t })}
-                  style={[s.input, { backgroundColor: colores.fondoInput }]}
+                  placeholder="Descripcion (opcional)"
+                  value={value.descripcion}
+                  onChangeText={(t) => onChange({ ...value, descripcion: t })}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
                   outlineStyle={{ borderRadius: RADIUS }}
-                  left={<TextInput.Icon icon="card-account-details" />}
                   textColor={colores.textoPrincipal}
                   placeholderTextColor={colores.textoSecundario}
                 />
 
+                <Text style={[styles.switchLabel, { color: colores.textoPrincipal }]}>Precio por día</Text>
                 <TextInput
                   mode="outlined"
-                  placeholder="Teléfono (opcional)"
-                  value={value.telefono}
-                  onChangeText={(t) => onChange({ ...value, telefono: t })}
-                  style={[s.input, { backgroundColor: colores.fondoInput }]}
+                  placeholder="Precio por dia"
+                  value={value.precioDia}
+                  onChangeText={(t) => onChange({ ...value, precioDia: t })}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
                   outlineStyle={{ borderRadius: RADIUS }}
-                  left={<TextInput.Icon icon="phone" />}
-                  keyboardType="phone-pad"
+                  keyboardType="numeric"
+                  textColor={colores.textoPrincipal}
+                  placeholderTextColor={colores.textoSecundario}
+                />
+                
+                <Text style={[styles.switchLabel, { color: colores.textoPrincipal }]}>Precio venta (opcional)</Text>
+                <TextInput
+                  mode="outlined"
+                  placeholder="Precio venta (opcional)"
+                  value={value.precioVenta}
+                  onChangeText={(t) => onChange({ ...value, precioVenta: t })}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
+                  outlineStyle={{ borderRadius: RADIUS }}
+                  keyboardType="numeric"
                   textColor={colores.textoPrincipal}
                   placeholderTextColor={colores.textoSecundario}
                 />
 
-                <TextInput
-                  mode="outlined"
-                  placeholder="Email"
-                  value={value.email}
-                  onChangeText={(t) => onChange({ ...value, email: t })}
-                  style={[s.input, { backgroundColor: colores.fondoInput }]}
-                  outlineStyle={{ borderRadius: RADIUS }}
-                  left={<TextInput.Icon icon="email" />}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  textColor={colores.textoPrincipal}
-                  placeholderTextColor={colores.textoSecundario}
-                />
+                <View style={styles.switchRow}>
+                  <Text style={[styles.switchLabel, { color: colores.textoPrincipal }]}>Activo</Text>
+                  <Switch
+                    value={value.activo}
+                    onValueChange={(v) => onChange({ ...value, activo: v })}
+                    color={colores.btnPrimario}
+                  />
+                </View>
               </ScrollView>
 
-              <View style={s.row}>
+              <View style={styles.row}>
                 <Button onPress={onCancel} mode="text" disabled={saving}>
                   Cancelar
                 </Button>
@@ -130,27 +144,3 @@ export default function ClienteDialog({
   );
 }
 
-const s = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 16,
-  },
-  card: {
-    borderRadius: 20,
-    padding: 16,
-  },
-  title: {
-    fontWeight: "800",
-    marginBottom: 10,
-  },
-  input: {
-    marginTop: 10,
-  },
-  row: {
-    marginTop: 14,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-});
