@@ -35,4 +35,19 @@ export const styles = StyleSheet.create({
     right: 16,
     bottom: 16,
   },
+  cartBadge: {
+    position: "absolute",
+    right: 10,
+    bottom: 72,
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 6,
+  },
+  cartBadgeText: {
+    fontSize: 11,
+    fontWeight: "800",
+  },
 });
