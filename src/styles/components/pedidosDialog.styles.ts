@@ -9,10 +9,18 @@ export const styles = StyleSheet.create({
   card: {
     borderRadius: 16,
     padding: 16,
+    width: "92%",
+    maxWidth: 460,
+    maxHeight: "84%",
+    alignSelf: "center",
   },
   title: {
     fontWeight: "800",
     marginBottom: 12,
+  },
+  readOnlyHint: {
+    fontSize: 12,
+    marginBottom: 10,
   },
   label: {
     fontSize: 13,
@@ -21,6 +29,9 @@ export const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 12,
+  },
+  inputDisabled: {
+    opacity: 0.65,
   },
   selector: {
     borderRadius: 16,

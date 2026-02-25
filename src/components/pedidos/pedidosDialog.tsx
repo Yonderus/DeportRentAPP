@@ -63,6 +63,9 @@ export default function PedidosDialog({
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
   const [selectorVisible, setSelectorVisible] = useState(false);
+  const inputDisabledStyle = !allowEdit
+    ? [styles.inputDisabled, { backgroundColor: colores.fondoPrincipal }]
+    : null;
 
   const clienteLabel = useMemo(() => {
     if (!value.clienteId) return "Selecciona un cliente";
@@ -86,83 +89,93 @@ export default function PedidosDialog({
         <View style={[styles.backdrop, { backgroundColor: "rgba(0,0,0,0.45)" }]}>
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={{ width: "100%" }}
+            style={{ width: "100%", alignItems: "center" }}
           >
             <View style={[styles.card, { backgroundColor: colores.fondoCard }]}> 
               <Text variant="titleMedium" style={[styles.title, { color: colores.textoPrincipal }]}> 
                 {title}
               </Text>
 
+              {!allowEdit ? (
+                <Text style={[styles.readOnlyHint, { color: colores.textoTerciario }]}> 
+                  Solo puedes modificar el estado del pedido.
+                </Text>
+              ) : null}
+
               <ScrollView keyboardShouldPersistTaps="handled">
-                <Text style={[styles.label, { color: colores.textoPrincipal }]}>Codigo</Text>
+                <Text style={[styles.label, { color: allowEdit ? colores.textoPrincipal : colores.textoTerciario }]}>Codigo</Text>
                 <TextInput
                   mode="outlined"
                   placeholder="PED-0001"
                   value={value.codigo}
                   onChangeText={(t) => onChange({ ...value, codigo: t })}
-                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }, inputDisabledStyle]}
                   outlineStyle={{ borderRadius: RADIUS }}
                   textColor={colores.textoPrincipal}
                   placeholderTextColor={colores.textoSecundario}
                   editable={allowEdit}
+                  disabled={!allowEdit}
                 />
 
-                <Text style={[styles.label, { color: colores.textoPrincipal }]}>Cliente</Text>
+                <Text style={[styles.label, { color: allowEdit ? colores.textoPrincipal : colores.textoTerciario }]}>Cliente</Text>
                 <Pressable
                   onPress={() => setSelectorVisible(true)}
                   disabled={!allowEdit}
                   style={({ pressed }) => [
                     styles.selector,
                     {
-                      borderColor: colores.borde,
-                      backgroundColor: colores.fondoInput,
+                      borderColor: allowEdit ? colores.borde : colores.bordeInput,
+                      backgroundColor: allowEdit ? colores.fondoInput : colores.fondoPrincipal,
                       opacity: allowEdit ? 1 : 0.6,
                     },
                     pressed && allowEdit ? styles.selectorPressed : null,
                   ]}
                 >
-                  <Text style={[styles.selectorText, { color: colores.textoPrincipal }]}>
+                  <Text style={[styles.selectorText, { color: allowEdit ? colores.textoPrincipal : colores.textoTerciario }]}>
                     {clienteLabel}
                   </Text>
                 </Pressable>
 
-                <Text style={[styles.label, { color: colores.textoPrincipal }]}>Tipo (opcional)</Text>
+                <Text style={[styles.label, { color: allowEdit ? colores.textoPrincipal : colores.textoTerciario }]}>Tipo (opcional)</Text>
                 <TextInput
                   mode="outlined"
                   placeholder="Alquiler / Venta"
                   value={value.tipo}
                   onChangeText={(t) => onChange({ ...value, tipo: t })}
-                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }, inputDisabledStyle]}
                   outlineStyle={{ borderRadius: RADIUS }}
                   textColor={colores.textoPrincipal}
                   placeholderTextColor={colores.textoSecundario}
                   editable={allowEdit}
+                  disabled={!allowEdit}
                 />
 
-                <Text style={[styles.label, { color: colores.textoPrincipal }]}>Fecha inicio</Text>
+                <Text style={[styles.label, { color: allowEdit ? colores.textoPrincipal : colores.textoTerciario }]}>Fecha inicio</Text>
                 <TextInput
                   mode="outlined"
                   placeholder="YYYY-MM-DD"
                   value={value.fechaInicio}
                   onChangeText={(t) => onChange({ ...value, fechaInicio: t })}
-                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }, inputDisabledStyle]}
                   outlineStyle={{ borderRadius: RADIUS }}
                   textColor={colores.textoPrincipal}
                   placeholderTextColor={colores.textoSecundario}
                   editable={allowEdit}
+                  disabled={!allowEdit}
                 />
 
-                <Text style={[styles.label, { color: colores.textoPrincipal }]}>Fecha fin</Text>
+                <Text style={[styles.label, { color: allowEdit ? colores.textoPrincipal : colores.textoTerciario }]}>Fecha fin</Text>
                 <TextInput
                   mode="outlined"
                   placeholder="YYYY-MM-DD"
                   value={value.fechaFin}
                   onChangeText={(t) => onChange({ ...value, fechaFin: t })}
-                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }, inputDisabledStyle]}
                   outlineStyle={{ borderRadius: RADIUS }}
                   textColor={colores.textoPrincipal}
                   placeholderTextColor={colores.textoSecundario}
                   editable={allowEdit}
+                  disabled={!allowEdit}
                 />
 
                 <Text style={[styles.label, { color: colores.textoPrincipal }]}>Estado</Text>
@@ -180,17 +193,18 @@ export default function PedidosDialog({
                   ))}
                 </View>
 
-                <Text style={[styles.label, { color: colores.textoPrincipal }]}>Notas (opcional)</Text>
+                <Text style={[styles.label, { color: allowEdit ? colores.textoPrincipal : colores.textoTerciario }]}>Notas (opcional)</Text>
                 <TextInput
                   mode="outlined"
                   placeholder="Notas internas"
                   value={value.notas}
                   onChangeText={(t) => onChange({ ...value, notas: t })}
-                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }, inputDisabledStyle]}
                   outlineStyle={{ borderRadius: RADIUS }}
                   textColor={colores.textoPrincipal}
                   placeholderTextColor={colores.textoSecundario}
                   editable={allowEdit}
+                  disabled={!allowEdit}
                   multiline
                 />
               </ScrollView>

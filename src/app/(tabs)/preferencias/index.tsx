@@ -5,6 +5,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { TemaApp, obtenerColores } from "../../../styles/theme";
+import { styles } from "../../../styles/app/preferencias.styles";
 
 type PreferenciasState = {
   tema: TemaApp;
@@ -37,16 +38,10 @@ export default function PreferenciasScreen() {
   const esOscuro = tema === "oscuro";
 
   return (
-    <View style={{ flex: 1, padding: 16, gap: 12, backgroundColor: colores.fondoPrincipal }}>
-      <Card style={{ backgroundColor: colores.fondoCard }}>
-        <Card.Content
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <Text style={{ color: colores.textoPrincipal }}>Modo oscuro</Text>
+    <View style={[styles.container, { backgroundColor: colores.fondoPrincipal }]}>
+      <Card style={[styles.card, { backgroundColor: colores.fondoCard }]}>
+        <Card.Content style={styles.cardContentRow}>
+          <Text style={[styles.label, { color: colores.textoPrincipal }]}>Modo oscuro</Text>
           <Switch value={esOscuro} onValueChange={toggleTema} />
         </Card.Content>
       </Card>

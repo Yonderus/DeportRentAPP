@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, View, Text } from "react-native";
+import { ActivityIndicator, FlatList, View, Text, Alert } from "react-native";
 import { FAB } from "react-native-paper";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTemaStore } from "./preferencias";
@@ -85,12 +85,9 @@ export default function PedidosScreen() {
     [pedidos, clientesPorId]
   );
 
-  const isLoading = isLoadingPedidos || isLoadingClientes;
-  const isError = isErrorPedidos || isErrorClientes;
-  const errorMessage =
-    (errorPedidos as Error | undefined)?.message ??
-    (errorClientes as Error | undefined)?.message ??
-    "Error al cargar pedidos";
+  const isLoading = isLoadingPedidos;
+  const isError = isErrorPedidos;
+  const errorMessage = (errorPedidos as Error | undefined)?.message ?? "Error al cargar pedidos";
 
   const createMutation = useMutation({
     mutationFn: addPedido,
@@ -215,6 +212,23 @@ export default function PedidosScreen() {
     setFormVisible(false);
   };
 
+  const cancelarPedidoNormal = (pedido: PedidoListItem) => {
+    if (pedido.estado !== "PENDIENTE_REVISION") return;
+
+    Alert.alert(
+      "Cancelar pedido",
+      `¿Seguro que quieres cancelar el pedido ${pedido.codigo}?`,
+      [
+        { text: "No", style: "cancel" },
+        {
+          text: "Sí, cancelar",
+          style: "destructive",
+          onPress: () => deleteMutation.mutate(pedido.id),
+        },
+      ]
+    );
+  };
+
   const renderItem = ({ item }: { item: PedidoListItem }) => (
     <PedidosItem
       pedido={item}
@@ -224,7 +238,9 @@ export default function PedidosScreen() {
               setSelectedPedido(pedido);
               setActionsVisible(true);
             }
-          : undefined
+          : item.estado === "PENDIENTE_REVISION"
+            ? cancelarPedidoNormal
+            : undefined
       }
     />
   );
@@ -284,7 +300,7 @@ export default function PedidosScreen() {
         onClose={() => setActionsVisible(false)}
         onEdit={(pedido) => {
           setActionsVisible(false);
-          abrirEditar(pedido);
+          abrirCambiarEstado(pedido);
         }}
         onDelete={(id) => deleteMutation.mutate(id)}
       />

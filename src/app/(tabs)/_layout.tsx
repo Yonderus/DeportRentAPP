@@ -86,6 +86,17 @@ export default function TabLayout() {
         />
 
         <Tabs.Screen
+          name="carrito"
+          options={{
+            title: "Carrito",
+            href: isAdmin ? null : undefined,
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="cart" color={color} size={size} />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
           name="pedidos"
           options={{
             title: "Pedidos",

@@ -7,8 +7,11 @@ import { AuthProvider } from "../providers/AuthProvider";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
+      retry: 0,
       refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      staleTime: 60 * 1000,
+      gcTime: 10 * 60 * 1000,
     },
   },
 });

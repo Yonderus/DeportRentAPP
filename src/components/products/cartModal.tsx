@@ -34,12 +34,6 @@ export default function CartModal({ visible, onClose }: Props) {
 
   const confirmarMutation = useMutation({
     mutationFn: addPedido,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["pedidos"] });
-      clearCarrito();
-      onClose();
-      Alert.alert("Pedido confirmado", "Tu pedido ya aparece en la sección de pedidos");
-    },
   });
 
   const totalItems = items.reduce((sum, item) => sum + item.cantidad, 0);
@@ -58,41 +52,73 @@ export default function CartModal({ visible, onClose }: Props) {
       return;
     }
 
-    const modalidades = Array.from(new Set(items.map((item) => item.modalidad)));
-    const tipoPedido =
-      modalidades.length > 1 ? "MIXTO" : modalidades[0] === "COMPRA" ? "COMPRA" : "ALQUILER";
+    const modalidadGroups = {
+      ALQUILER: items.filter((item) => item.modalidad === "ALQUILER"),
+      COMPRA: items.filter((item) => item.modalidad === "COMPRA"),
+    };
+
+    const pedidosAPersistir = [
+      { tipo: "ALQUILER" as const, lineas: modalidadGroups.ALQUILER },
+      { tipo: "COMPRA" as const, lineas: modalidadGroups.COMPRA },
+    ].filter((group) => group.lineas.length > 0);
 
     const hoy = new Date();
     const fecha = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-${String(
       hoy.getDate()
     ).padStart(2, "0")}`;
 
-    const resumen = items
-      .map(
-        (item) =>
-          `${item.producto.nombre} [${item.talla?.codigoTalla ?? "Sin talla"}] x${item.cantidad} (${item.modalidad})`
-      )
-      .join(" | ");
-
-    const payload: Omit<Pedido, "id"> = {
-      codigo: `WEB-${Date.now().toString().slice(-8)}`,
-      tipo: tipoPedido,
-      clienteId: clienteActivo.id,
-      fechaInicio: fecha,
-      fechaFin: fecha,
-      estado: "PENDIENTE_REVISION",
-      creadoPor: userId ?? undefined,
-      notas: `Pedido desde carrito. Total ${totalImporte.toFixed(2)} EUR. ${resumen}`,
-    };
-
     Alert.alert(
       "Confirmar compra",
-      "Se creará un pedido con los productos del carrito. ¿Quieres continuar?",
+      pedidosAPersistir.length > 1
+        ? "Se crearán 2 pedidos (uno de alquiler y otro de compra). ¿Quieres continuar?"
+        : "Se creará un pedido con los productos del carrito. ¿Quieres continuar?",
       [
         { text: "Cancelar", style: "cancel" },
         {
           text: "Confirmar",
-          onPress: () => confirmarMutation.mutate(payload),
+          onPress: async () => {
+            try {
+              for (const group of pedidosAPersistir) {
+                const resumen = group.lineas
+                  .map(
+                    (item) =>
+                      `${item.producto.nombre} [${item.talla?.codigoTalla ?? "Sin talla"}] x${item.cantidad} (${item.modalidad})`
+                  )
+                  .join(" | ");
+
+                const subtotal = group.lineas.reduce(
+                  (sum, item) =>
+                    sum + item.cantidad * (item.precioUnitario ?? item.producto.precioDia ?? 0),
+                  0
+                );
+
+                const payload: Omit<Pedido, "id"> = {
+                  codigo: `WEB-${Date.now().toString().slice(-8)}-${group.tipo[0]}`,
+                  tipo: group.tipo,
+                  clienteId: clienteActivo.id,
+                  fechaInicio: fecha,
+                  fechaFin: fecha,
+                  estado: "PENDIENTE_REVISION",
+                  creadoPor: userId ?? undefined,
+                  notas: `Pedido desde carrito. Total ${subtotal.toFixed(2)} EUR. ${resumen}`,
+                };
+
+                await confirmarMutation.mutateAsync(payload);
+              }
+
+              await queryClient.invalidateQueries({ queryKey: ["pedidos"] });
+              clearCarrito();
+              onClose();
+              Alert.alert(
+                "Pedido confirmado",
+                pedidosAPersistir.length > 1
+                  ? "Se han creado los pedidos de alquiler y compra"
+                  : "Tu pedido ya aparece en la sección de pedidos"
+              );
+            } catch (error: any) {
+              Alert.alert("No se pudo confirmar", error?.message ?? "Error al confirmar el pedido");
+            }
+          },
         },
       ]
     );
