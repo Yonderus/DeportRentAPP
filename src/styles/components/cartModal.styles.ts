@@ -81,6 +81,10 @@ export const styles = StyleSheet.create({
   clearBtn: {
     marginTop: 12,
   },
+  confirmBtn: {
+    marginTop: 10,
+    borderRadius: 12,
+  },
   closeBtn: {
     marginTop: 12,
   },

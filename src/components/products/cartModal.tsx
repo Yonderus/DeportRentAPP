@@ -1,9 +1,14 @@
 import React from "react";
-import { Modal, Pressable, View, Text, Image, ScrollView } from "react-native";
+import { Modal, Pressable, View, Text, Image, ScrollView, Alert } from "react-native";
 import { Button } from "react-native-paper";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
 import { obtenerColores } from "../../styles/theme";
 import { useCarritoStore } from "../../stores/useCarritoStore";
+import { useUsuarioStore } from "../../stores/useUsuarioStore";
+import { getClients } from "../../services/clientsService";
+import { addPedido } from "../../services/pedidosService";
+import { Pedido } from "../../types/types";
 import { styles } from "../../styles/components/cartModal.styles";
 
 type Props = {
@@ -14,11 +19,28 @@ type Props = {
 export default function CartModal({ visible, onClose }: Props) {
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
+  const userId = useUsuarioStore((s) => s.id);
+  const queryClient = useQueryClient();
   const items = useCarritoStore((s) => s.items);
   const removeProducto = useCarritoStore((s) => s.removeProducto);
   const incrementarCantidad = useCarritoStore((s) => s.incrementarCantidad);
   const decrementarCantidad = useCarritoStore((s) => s.decrementarCantidad);
   const clearCarrito = useCarritoStore((s) => s.clearCarrito);
+
+  const { data: clientes = [] } = useQuery({
+    queryKey: ["clientes"],
+    queryFn: getClients,
+  });
+
+  const confirmarMutation = useMutation({
+    mutationFn: addPedido,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["pedidos"] });
+      clearCarrito();
+      onClose();
+      Alert.alert("Pedido confirmado", "Tu pedido ya aparece en la sección de pedidos");
+    },
+  });
 
   const totalItems = items.reduce((sum, item) => sum + item.cantidad, 0);
   const totalImporte = items.reduce(
@@ -26,6 +48,55 @@ export default function CartModal({ visible, onClose }: Props) {
       sum + item.cantidad * (item.precioUnitario ?? item.producto.precioDia ?? 0),
     0
   );
+
+  const confirmarCompra = () => {
+    if (items.length === 0) return;
+
+    const clienteActivo = clientes.find((cliente) => cliente.activo);
+    if (!clienteActivo) {
+      Alert.alert("No se puede confirmar", "No hay clientes activos para asociar el pedido");
+      return;
+    }
+
+    const modalidades = Array.from(new Set(items.map((item) => item.modalidad)));
+    const tipoPedido =
+      modalidades.length > 1 ? "MIXTO" : modalidades[0] === "COMPRA" ? "COMPRA" : "ALQUILER";
+
+    const hoy = new Date();
+    const fecha = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-${String(
+      hoy.getDate()
+    ).padStart(2, "0")}`;
+
+    const resumen = items
+      .map(
+        (item) =>
+          `${item.producto.nombre} [${item.talla?.codigoTalla ?? "Sin talla"}] x${item.cantidad} (${item.modalidad})`
+      )
+      .join(" | ");
+
+    const payload: Omit<Pedido, "id"> = {
+      codigo: `WEB-${Date.now().toString().slice(-8)}`,
+      tipo: tipoPedido,
+      clienteId: clienteActivo.id,
+      fechaInicio: fecha,
+      fechaFin: fecha,
+      estado: "PENDIENTE_REVISION",
+      creadoPor: userId ?? undefined,
+      notas: `Pedido desde carrito. Total ${totalImporte.toFixed(2)} EUR. ${resumen}`,
+    };
+
+    Alert.alert(
+      "Confirmar compra",
+      "Se creará un pedido con los productos del carrito. ¿Quieres continuar?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Confirmar",
+          onPress: () => confirmarMutation.mutate(payload),
+        },
+      ]
+    );
+  };
 
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
@@ -91,6 +162,18 @@ export default function CartModal({ visible, onClose }: Props) {
 
               <Button mode="outlined" onPress={clearCarrito} style={styles.clearBtn}>
                 Vaciar carrito
+              </Button>
+
+              <Button
+                mode="contained"
+                onPress={confirmarCompra}
+                loading={confirmarMutation.isPending}
+                disabled={confirmarMutation.isPending || items.length === 0}
+                buttonColor={colores.btnPrimario}
+                textColor={colores.textoInverso}
+                style={styles.confirmBtn}
+              >
+                Confirmar compra
               </Button>
             </>
           )}
