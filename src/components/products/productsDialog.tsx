@@ -56,7 +56,7 @@ export default function ProductsDialog({
     if (!permission.granted) return;
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images", "videos"],
       quality: 0.85,
       base64: true,
     });
@@ -142,10 +142,10 @@ export default function ProductsDialog({
                   placeholderTextColor={colores.textoSecundario}
                 />
                 
-                <Text style={[styles.switchLabel, { color: colores.textoPrincipal }]}>Precio venta (opcional)</Text>
+                <Text style={[styles.switchLabel, { color: colores.textoPrincipal }]}>Precio venta</Text>
                 <TextInput
                   mode="outlined"
-                  placeholder="Precio venta (opcional)"
+                  placeholder="Precio venta"
                   value={value.precioVenta}
                   onChangeText={(t) => onChange({ ...value, precioVenta: t })}
                   style={[styles.input, { backgroundColor: colores.fondoInput }]}

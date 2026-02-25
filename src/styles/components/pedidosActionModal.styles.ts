@@ -21,19 +21,21 @@ export const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 12,
   },
-  row: {
+  actionButton: {
     marginTop: 14,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    borderRadius: 16,
+  },
+  actionContent: {
+    minHeight: 48,
+  },
+  actionLabel: {
+    fontSize: 16,
+    fontWeight: "800",
   },
   deleteButton: {
     marginTop: 12,
   },
-  buttonSpacer: {
-    height: 10,
-  },
   closeButton: {
-    marginTop: 0,
+    marginTop: 12,
   },
 });

@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal, View, Alert, TouchableOpacity } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { Button, Text, useTheme } from "react-native-paper";
 import { Producto } from "../../types/types";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
 import { obtenerColores } from "../../styles/theme";
@@ -25,6 +25,7 @@ export default function ProductsActionModal({
 }: Props) {
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
+  const paperTheme = useTheme();
 
   if (!producto) return null;
 
@@ -55,14 +56,29 @@ export default function ProductsActionModal({
             <Text style={[styles.line, { color: colores.textoSecundario }]}>Precio venta: {producto.precioVenta} EUR</Text>
           ) : null}
 
-          <View style={styles.row}>
-            <Button mode="text" onPress={confirmarBorrado}>
-              Eliminar
-            </Button>
-            <Button mode="contained" onPress={() => onEdit(producto)}>
-              Editar
-            </Button>
-          </View>
+          <Button
+            mode="contained"
+            onPress={() => onEdit(producto)}
+            buttonColor={colores.btnPrimario}
+            textColor={colores.textoInverso}
+            style={styles.actionButton}
+            contentStyle={styles.actionContent}
+            labelStyle={styles.actionLabel}
+          >
+            Editar
+          </Button>
+
+          <Button
+            mode="contained"
+            onPress={confirmarBorrado}
+            buttonColor={paperTheme.colors.error}
+            textColor={colores.textoInverso}
+            style={[styles.actionButton, styles.deleteButton]}
+            contentStyle={styles.actionContent}
+            labelStyle={styles.actionLabel}
+          >
+            Eliminar
+          </Button>
 
           <Button mode="contained-tonal" onPress={() => onSizes(producto)} style={{ marginTop: 10 }}>
             Tallas

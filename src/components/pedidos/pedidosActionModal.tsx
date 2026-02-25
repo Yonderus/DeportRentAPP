@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal, View, TouchableOpacity, Alert } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { Button, Text, useTheme } from "react-native-paper";
 import { PedidoListItem } from "../../services/pedidosService";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
 import { obtenerColores } from "../../styles/theme";
@@ -23,6 +23,7 @@ export default function PedidosActionModal({
 }: Props) {
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
+  const paperTheme = useTheme();
 
   if (!pedido) return null;
 
@@ -67,22 +68,31 @@ export default function PedidosActionModal({
             </Text>
           ) : null}
 
-          <View style={styles.row}>
-            <Button mode="contained" onPress={() => onEdit(pedido)} disabled={isFinalizado}>
-              Editar
-            </Button>
-          </View>
+          <Button
+            mode="contained"
+            onPress={() => onEdit(pedido)}
+            disabled={isFinalizado}
+            buttonColor={colores.btnPrimario}
+            textColor={colores.textoInverso}
+            style={styles.actionButton}
+            contentStyle={styles.actionContent}
+            labelStyle={styles.actionLabel}
+          >
+            Editar
+          </Button>
 
           <Button
-            mode="outlined"
+            mode="contained"
             onPress={confirmarBorrado}
             disabled={isFinalizado}
-            style={styles.deleteButton}
+            buttonColor={paperTheme.colors.error}
+            textColor={colores.textoInverso}
+            style={[styles.actionButton, styles.deleteButton]}
+            contentStyle={styles.actionContent}
+            labelStyle={styles.actionLabel}
           >
             Eliminar
           </Button>
-
-          <View style={styles.buttonSpacer} />
 
           <Button mode="contained-tonal" onPress={onClose} style={styles.closeButton}>
             Cerrar
