@@ -488,11 +488,39 @@ export default function ProductosScreen() {
       <ProductPreviewModal
         visible={previewVisible}
         producto={selectedProduct}
+        tallas={
+          selectedProduct
+            ? tallas.filter((t) => t.productoId === selectedProduct.id && t.activo)
+            : []
+        }
         imageUrl={selectedProduct ? imageUrls[selectedProduct.id] : null}
         onClose={() => setPreviewVisible(false)}
-        onAddToCart={(producto) => {
-          addProductoCarrito(producto, imageUrls[producto.id] ?? null);
-          Alert.alert("Carrito", `${producto.nombre} añadido al carrito`);
+        onAddToCart={(producto, talla) => {
+          if (producto.precioVenta && producto.precioVenta > 0) {
+            Alert.alert("Añadir al carrito", "¿Quieres añadirlo como alquiler o compra?", [
+              { text: "Cancelar", style: "cancel" },
+              {
+                text: "Alquiler",
+                onPress: () => {
+                  addProductoCarrito(producto, talla, "ALQUILER", imageUrls[producto.id] ?? null);
+                  Alert.alert("Carrito", `${producto.nombre} (${talla.codigoTalla}) añadido como alquiler`);
+                  setPreviewVisible(false);
+                },
+              },
+              {
+                text: "Compra",
+                onPress: () => {
+                  addProductoCarrito(producto, talla, "COMPRA", imageUrls[producto.id] ?? null);
+                  Alert.alert("Carrito", `${producto.nombre} (${talla.codigoTalla}) añadido como compra`);
+                  setPreviewVisible(false);
+                },
+              },
+            ]);
+            return;
+          }
+
+          addProductoCarrito(producto, talla, "ALQUILER", imageUrls[producto.id] ?? null);
+          Alert.alert("Carrito", `${producto.nombre} (${talla.codigoTalla}) añadido como alquiler`);
           setPreviewVisible(false);
         }}
       />

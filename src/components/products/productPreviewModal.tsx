@@ -1,7 +1,7 @@
-import React from "react";
-import { Modal, TouchableOpacity, View, Image, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Modal, TouchableOpacity, View, Image, ScrollView, Pressable } from "react-native";
 import { Button, Text } from "react-native-paper";
-import { Producto } from "../../types/types";
+import { Producto, TallaProducto } from "../../types/types";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
 import { obtenerColores } from "../../styles/theme";
 import { styles } from "../../styles/components/productPreviewModal.styles";
@@ -9,22 +9,35 @@ import { styles } from "../../styles/components/productPreviewModal.styles";
 type Props = {
   visible: boolean;
   producto: Producto | null;
+  tallas: TallaProducto[];
   imageUrl?: string | null;
   onClose: () => void;
-  onAddToCart: (producto: Producto) => void;
+  onAddToCart: (producto: Producto, talla: Pick<TallaProducto, "id" | "codigoTalla">) => void;
 };
 
 export default function ProductPreviewModal({
   visible,
   producto,
+  tallas,
   imageUrl,
   onClose,
   onAddToCart,
 }: Props) {
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
+  const [selectedTallaId, setSelectedTallaId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!visible) return;
+    const firstTalla = tallas.find((t) => t.activo);
+    setSelectedTallaId(firstTalla?.id ?? null);
+  }, [visible, producto?.id, tallas]);
 
   if (!producto) return null;
+
+  const tallasActivas = tallas.filter((t) => t.activo);
+  const selectedTalla = tallasActivas.find((t) => t.id === selectedTallaId) ?? null;
+  const canAddToCart = !!selectedTalla;
 
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
@@ -74,12 +87,47 @@ export default function ProductPreviewModal({
                 </Text>
               ) : null}
             </View>
+
+            <Text style={[styles.sizeTitle, { color: colores.textoPrincipal }]}>Talla</Text>
+            {tallasActivas.length > 0 ? (
+              <View style={styles.sizeList}>
+                {tallasActivas.map((talla) => {
+                  const isSelected = selectedTallaId === talla.id;
+                  return (
+                    <Pressable
+                      key={talla.id}
+                      onPress={() => setSelectedTallaId(talla.id)}
+                      style={[
+                        styles.sizeChip,
+                        {
+                          borderColor: isSelected ? colores.btnPrimario : colores.borde,
+                          backgroundColor: isSelected ? colores.btnPrimario : colores.fondoSecundario,
+                        },
+                      ]}
+                    >
+                      <Text style={{ color: isSelected ? colores.textoInverso : colores.textoPrincipal }}>
+                        {talla.codigoTalla}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ) : (
+              <Text style={[styles.sizeHelper, { color: colores.enlaces }]}>Este producto no tiene tallas activas</Text>
+            )}
           </ScrollView>
 
           <View style={styles.actions}>
             <Button
               mode="contained"
-              onPress={() => onAddToCart(producto)}
+              onPress={() => {
+                if (!selectedTalla) return;
+                onAddToCart(producto, {
+                  id: selectedTalla.id,
+                  codigoTalla: selectedTalla.codigoTalla,
+                });
+              }}
+              disabled={!canAddToCart}
               buttonColor={colores.btnPrimario}
               textColor={colores.textoInverso}
               style={styles.actionButton}

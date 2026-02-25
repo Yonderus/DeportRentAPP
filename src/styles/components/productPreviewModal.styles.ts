@@ -79,6 +79,26 @@ export const styles = StyleSheet.create({
   priceLineSecondary: {
     fontSize: 13,
   },
+  sizeTitle: {
+    marginTop: 12,
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 6,
+  },
+  sizeList: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  sizeChip: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  sizeHelper: {
+    fontSize: 12,
+  },
   actions: {
     marginTop: 16,
     gap: 10,

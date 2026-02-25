@@ -22,7 +22,8 @@ export default function CartModal({ visible, onClose }: Props) {
 
   const totalItems = items.reduce((sum, item) => sum + item.cantidad, 0);
   const totalImporte = items.reduce(
-    (sum, item) => sum + item.cantidad * (item.producto.precioDia ?? 0),
+    (sum, item) =>
+      sum + item.cantidad * (item.precioUnitario ?? item.producto.precioDia ?? 0),
     0
   );
 
@@ -43,9 +44,13 @@ export default function CartModal({ visible, onClose }: Props) {
                 nestedScrollEnabled
                 showsVerticalScrollIndicator
               >
-                {items.map((item) => (
+                {items.map((item) => {
+                  const tallaId = item.talla?.id ?? -1;
+                  const tallaCodigo = item.talla?.codigoTalla ?? "Sin talla";
+
+                  return (
                   <View
-                    key={item.producto.id}
+                    key={`${item.producto.id}-${tallaId}-${item.modalidad ?? "ALQUILER"}`}
                     style={[styles.row, { borderColor: colores.borde, backgroundColor: colores.fondoSecundario }]}
                   >
                     {item.imageUrl ? (
@@ -58,28 +63,30 @@ export default function CartModal({ visible, onClose }: Props) {
 
                     <View style={styles.info}>
                       <Text style={[styles.name, { color: colores.textoPrincipal }]}>{item.producto.nombre}</Text>
-                      <Text style={[styles.meta, { color: colores.textoSecundario }]}>Precio: {item.producto.precioDia} EUR/día</Text>
+                      <Text style={[styles.meta, { color: colores.textoSecundario }]}>Talla: {tallaCodigo}</Text>
+                      <Text style={[styles.meta, { color: colores.textoSecundario }]}>Tipo: {item.modalidad === "COMPRA" ? "Compra" : "Alquiler"}</Text>
+                      <Text style={[styles.meta, { color: colores.textoSecundario }]}>Precio: {item.precioUnitario} EUR</Text>
                       <Text style={[styles.meta, { color: colores.textoSecundario }]}>Cantidad: {item.cantidad}</Text>
                     </View>
 
                     <View style={styles.actionsCol}>
-                      <Button mode="text" compact onPress={() => decrementarCantidad(item.producto.id)}>
+                      <Button mode="text" compact onPress={() => decrementarCantidad(item.producto.id, tallaId, item.modalidad ?? "ALQUILER")}>
                         -
                       </Button>
-                      <Button mode="text" compact onPress={() => incrementarCantidad(item.producto.id)}>
+                      <Button mode="text" compact onPress={() => incrementarCantidad(item.producto.id, tallaId, item.modalidad ?? "ALQUILER")}>
                         +
                       </Button>
-                      <Button mode="text" compact onPress={() => removeProducto(item.producto.id)}>
+                      <Button mode="text" compact onPress={() => removeProducto(item.producto.id, tallaId, item.modalidad ?? "ALQUILER")}>
                         Quitar
                       </Button>
                     </View>
                   </View>
-                ))}
+                );})}
               </ScrollView>
 
               <View style={[styles.summary, { borderTopColor: colores.borde }]}> 
                 <Text style={[styles.summaryText, { color: colores.textoPrincipal }]}>Items: {totalItems}</Text>
-                <Text style={[styles.summaryText, { color: colores.btnPrimario }]}>Total/día: {totalImporte.toFixed(2)} EUR</Text>
+                <Text style={[styles.summaryText, { color: colores.btnPrimario }]}>Total: {totalImporte.toFixed(2)} EUR</Text>
               </View>
 
               <Button mode="outlined" onPress={clearCarrito} style={styles.clearBtn}>
