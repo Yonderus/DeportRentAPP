@@ -1,28 +1,3 @@
-import { StyleSheet, View } from "react-native";
-import { GluestackUIProvider } from "@gluestack-ui/themed";
-import { PaperProvider } from "react-native-paper";
-import { config } from "@gluestack-ui/config";
-
-import { NavigationContainer } from "@react-navigation/native";
-import Navegador from "./src/navegacion/navegador";
-
 export default function App() {
-  return (
-    <GluestackUIProvider config={config}>
-      <PaperProvider>
-        <View style={styles.container}>
-          <NavigationContainer>
-            <Navegador />
-          </NavigationContainer>
-        </View>
-      </PaperProvider>
-    </GluestackUIProvider>
-  );
+  return null;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "darkgrey",
-  },
-});

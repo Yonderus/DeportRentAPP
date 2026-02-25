@@ -8,9 +8,6 @@ import { useUsuarioStore } from "../../stores/useUsuarioStore";
 import { useAuth } from "../../providers/AuthProvider";
 import { obtenerColores } from "../../styles/theme";
 import { StatusBar } from "react-native";
-import type { StatusBarStyle } from "react-native";
-
-const STYLES = ['default', 'dark-content', 'light-content'] as const;
 
 export default function TabLayout() {
   const tema = useTemaStore((s) => s.tema);
@@ -20,9 +17,7 @@ export default function TabLayout() {
   const router = useRouter();
   const colores = obtenerColores(tema);
   const isAdmin = rol === "ADMIN";
-  const [statusBarStyle, setStatusBarStyle] = React.useState<StatusBarStyle>(
-    STYLES[0],
-  );
+  const statusBarStyle = "default" as const;
 
 
   React.useEffect(() => {

@@ -95,19 +95,6 @@ export default function ClientsCard() {
     setFormVisible(true);
   };
 
-  const abrirEditar = (client: Cliente) => {
-    setEditingId(client.id);
-    setForm({
-      nombre: client.nombre,
-      telefono: client.telefono,
-      email: client.email,
-      nifCif: client.nifCif,
-      notas: client.notas,
-      activo: client.activo,
-    });
-    setFormVisible(true);
-  };
-
   const guardar = async (data: ClientForm) => {
     if (editingId === null) await createMutation.mutateAsync(data);
     else await updateMutation.mutateAsync({ id: editingId, data });

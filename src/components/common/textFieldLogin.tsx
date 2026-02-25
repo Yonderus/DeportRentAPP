@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { StyleSheet, View } from "react-native";
 import { TextInput } from "react-native-paper";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
 import { obtenerColores } from "../../styles/theme";

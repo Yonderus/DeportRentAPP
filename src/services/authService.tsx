@@ -172,14 +172,6 @@ export const updateAvatarPathForUser = async (
   }
 };
 
-// Detecta extension si viene en el nombre del archivo.
-const getFileExtensionFromUri = (uri: string) => {
-  const cleanUri = uri.split("?")[0];
-  const dotIndex = cleanUri.lastIndexOf(".");
-  if (dotIndex === -1) return DEFAULT_AVATAR_EXT;
-  return cleanUri.substring(dotIndex + 1).toLowerCase();
-};
-
 // Mapea extension -> mime type para Storage.
 const getContentTypeFromExtension = (ext: string) => {
   switch (ext) {

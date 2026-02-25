@@ -57,9 +57,6 @@ export default function PedidosScreen() {
 
   const {
     data: clientes = [],
-    isLoading: isLoadingClientes,
-    isError: isErrorClientes,
-    error: errorClientes,
   } = useQuery({
     queryKey: ["clientes"],
     queryFn: getClients,
@@ -168,13 +165,6 @@ export default function PedidosScreen() {
     setEditingId(null);
     setStatusOnly(false);
     setForm(buildForm());
-    setFormVisible(true);
-  };
-
-  const abrirEditar = (pedido: PedidoListItem) => {
-    setEditingId(pedido.id);
-    setStatusOnly(false);
-    setForm(buildForm(pedido));
     setFormVisible(true);
   };
 

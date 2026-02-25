@@ -110,13 +110,6 @@ export const deleteTallaProducto = async (id: number): Promise<void> => {
   if (error) throw new Error(error.message);
 };
 
-const getFileExtensionFromUri = (uri: string) => {
-  const cleanUri = uri.split("?")[0];
-  const dotIndex = cleanUri.lastIndexOf(".");
-  if (dotIndex === -1) return DEFAULT_IMAGE_EXT;
-  return cleanUri.substring(dotIndex + 1).toLowerCase();
-};
-
 const getContentTypeFromExtension = (ext: string) => {
   switch (ext) {
     case "png":

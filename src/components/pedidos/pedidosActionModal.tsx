@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, View, TouchableOpacity, Alert } from "react-native";
+import { Modal, TouchableOpacity, Alert } from "react-native";
 import { Button, Text, useTheme } from "react-native-paper";
 import { PedidoListItem } from "../../services/pedidosService";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
