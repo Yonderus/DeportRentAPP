@@ -386,15 +386,27 @@ export default function PerfilScreen() {
             right={(props) => <List.Icon {...props} icon="chevron-right" color={colores.textoSecundario} />}
             onPress={() => router.push("/pedidos")}
           />
-          <List.Item
-            title="Clientes"
-            description="Consulta y edita clientes"
-            titleStyle={{ color: colores.textoPrincipal }}
-            descriptionStyle={{ color: colores.textoSecundario }}
-            left={(props) => <List.Icon {...props} icon="account-group" color={colores.btnSecundario} />}
-            right={(props) => <List.Icon {...props} icon="chevron-right" color={colores.textoSecundario} />}
-            onPress={() => router.push("/clientes")}
-          />
+          {rol === "NORMAL" ? (
+            <List.Item
+              title="Productos"
+              description="Consulta productos disponibles"
+              titleStyle={{ color: colores.textoPrincipal }}
+              descriptionStyle={{ color: colores.textoSecundario }}
+              left={(props) => <List.Icon {...props} icon="basket" color={colores.btnSecundario} />}
+              right={(props) => <List.Icon {...props} icon="chevron-right" color={colores.textoSecundario} />}
+              onPress={() => router.push("/productos")}
+            />
+          ) : (
+            <List.Item
+              title="Clientes"
+              description="Consulta y edita clientes"
+              titleStyle={{ color: colores.textoPrincipal }}
+              descriptionStyle={{ color: colores.textoSecundario }}
+              left={(props) => <List.Icon {...props} icon="account-group" color={colores.btnSecundario} />}
+              right={(props) => <List.Icon {...props} icon="chevron-right" color={colores.textoSecundario} />}
+              onPress={() => router.push("/clientes")}
+            />
+          )}
           <List.Item
             title="Preferencias"
             description="Personaliza tu experiencia"

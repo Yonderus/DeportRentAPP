@@ -19,12 +19,20 @@ interface MenuCard {
 
 const menuOptions: MenuCard[] = [
   {
+    title: "Productos",
+    description: "Ver productos disponibles",
+    icon: "basket",
+    route: "/productos",
+    color: "#0EA5E9",
+    rolesPermitidos: ['ADMIN', 'NORMAL'],
+  },
+  {
     title: "Clientes",
     description: "Gestionar clientes y direcciones",
     icon: "account-group",
     route: "/clientes",
     color: "#4F46E5",
-    rolesPermitidos: ['ADMIN', 'NORMAL'],
+    rolesPermitidos: ['ADMIN'],
   },
   {
     title: "Pedidos",

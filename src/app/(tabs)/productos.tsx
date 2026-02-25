@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { ActivityIndicator, Alert, FlatList, View, Text } from "react-native";
 import { FAB } from "react-native-paper";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -44,6 +44,7 @@ export default function ProductosScreen() {
   const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null);
   const [editingSizeId, setEditingSizeId] = useState<number | null>(null);
   const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
+  const signedUrlCacheRef = useRef<Record<string, string>>({});
   const [form, setForm] = useState<ProductForm>({
     nombre: "",
     descripcion: "",
@@ -96,6 +97,11 @@ export default function ProductosScreen() {
     return map;
   }, [tallas]);
 
+  const productosActivos = useMemo(
+    () => productos.filter((producto) => producto.activo),
+    [productos]
+  );
+
   useEffect(() => {
     let mounted = true;
 
@@ -105,7 +111,16 @@ export default function ProductosScreen() {
           .filter((producto) => producto.imagePath)
           .map(async (producto) => {
             try {
-              const url = await getSignedProductImageUrl(producto.imagePath as string);
+              const imagePath = producto.imagePath as string;
+              const cachedUrl = signedUrlCacheRef.current[imagePath];
+              if (cachedUrl) {
+                return [producto.id, cachedUrl] as const;
+              }
+
+              const url = await getSignedProductImageUrl(imagePath);
+              if (url) {
+                signedUrlCacheRef.current[imagePath] = url;
+              }
               return [producto.id, url] as const;
             } catch {
               return [producto.id, null] as const;
@@ -331,6 +346,7 @@ export default function ProductosScreen() {
   const abrirCrearTalla = () => {
     setEditingSizeId(null);
     setSizeForm({ codigoTalla: "", descripcion: "", activo: true });
+    setSizesVisible(false);
     setSizeFormVisible(true);
   };
 
@@ -341,7 +357,15 @@ export default function ProductosScreen() {
       descripcion: talla.descripcion ?? "",
       activo: talla.activo,
     });
+    setSizesVisible(false);
     setSizeFormVisible(true);
+  };
+
+  const cerrarFormularioTalla = () => {
+    setSizeFormVisible(false);
+    if (selectedProduct) {
+      setSizesVisible(true);
+    }
   };
 
   const guardarTalla = async (data: SizeForm) => {
@@ -360,6 +384,7 @@ export default function ProductosScreen() {
     }
 
     setSizeFormVisible(false);
+    setSizesVisible(true);
   };
 
   const renderItem = ({ item }: { item: (typeof productos)[number] }) => {
@@ -400,13 +425,13 @@ export default function ProductosScreen() {
         <View style={styles.centerState}>
           <Text style={[styles.stateText, { color: colores.enlaces }]}>{errorMessage}</Text>
         </View>
-      ) : productos.filter((producto) => producto.activo).length === 0 ? (
+      ) : productosActivos.length === 0 ? (
         <View style={styles.centerState}>
           <Text style={[styles.stateText, { color: colores.textoSecundario }]}>No hay productos activos</Text>
         </View>
       ) : (
         <FlatList
-          data={productos.filter((producto) => producto.activo)}
+          data={productosActivos}
           keyExtractor={(item) => String(item.id)}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
@@ -480,7 +505,7 @@ export default function ProductosScreen() {
         title={editingSizeId === null ? "Nueva talla" : "Editar talla"}
         value={sizeForm}
         onChange={setSizeForm}
-        onCancel={() => setSizeFormVisible(false)}
+        onCancel={cerrarFormularioTalla}
         onSave={guardarTalla}
         saving={createSizeMutation.isPending || updateSizeMutation.isPending}
       />
