@@ -8,6 +8,7 @@ import { obtenerColores } from "../../../styles/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getSignedAvatarUrl, uploadAvatarForUser } from "../../../services/authService";
 import * as ImagePicker from "expo-image-picker";
+import { styles } from "../../../styles/app/perfil.styles";
 
 
 export default function PerfilScreen() {
@@ -206,11 +207,11 @@ export default function PerfilScreen() {
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: colores.fondoPrincipal }}
-      contentContainerStyle={{ padding: 16, gap: 12 }}
+      style={[styles.container, { backgroundColor: colores.fondoPrincipal }]}
+      contentContainerStyle={styles.contentContainer}
     >
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-        <Text variant="headlineSmall" style={{ fontWeight: "700", color: colores.textoPrincipal }}>
+      <View style={styles.headerRow}>
+        <Text variant="headlineSmall" style={[styles.pageTitle, { color: colores.textoPrincipal }]}>
           Perfil
         </Text>
 
@@ -223,14 +224,14 @@ export default function PerfilScreen() {
         />
       </View>
 
-      <Card style={{ backgroundColor: colores.fondoCard }}>
-        <Card.Content style={{ gap: 12 }}>
-          <Text variant="titleMedium" style={{ fontWeight: "700", color: colores.textoPrincipal }}>
+      <Card style={[styles.card, { backgroundColor: colores.fondoCard }]}>
+        <Card.Content style={styles.cardContent}>
+          <Text variant="titleMedium" style={[styles.sectionTitle, { color: colores.textoPrincipal }]}>
             Información del usuario
           </Text>
 
           <View>
-            <Text style={{ color: colores.textoSecundario, marginBottom: 4 }}>Email</Text>
+            <Text style={[styles.fieldLabel, { color: colores.textoSecundario }]}>Email</Text>
             {editando ? (
               <TextInput
                 value={emailEditado}
@@ -242,20 +243,20 @@ export default function PerfilScreen() {
                 error={!!errorEmail}
               />
             ) : (
-              <Text style={{ color: colores.textoPrincipal, fontWeight: "500" }}>{email ?? "-"}</Text>
+              <Text style={[styles.fieldValue, { color: colores.textoPrincipal }]}>{email ?? "-"}</Text>
             )}
             {editando && errorEmail ? (
-              <Text style={{ color: colores.textoSecundario, marginTop: 6 }}>{errorEmail}</Text>
+              <Text style={[styles.fieldError, { color: colores.textoSecundario }]}>{errorEmail}</Text>
             ) : null}
           </View>
 
           <View>
-            <Text style={{ color: colores.textoSecundario, marginBottom: 4 }}>Rol</Text>
-            <Text style={{ color: colores.textoPrincipal, fontWeight: "500" }}>{rol ?? "-"}</Text>
+            <Text style={[styles.fieldLabel, { color: colores.textoSecundario }]}>Rol</Text>
+            <Text style={[styles.fieldValue, { color: colores.textoPrincipal }]}>{rol ?? "-"}</Text>
           </View>
 
           <View>
-            <Text style={{ color: colores.textoSecundario, marginBottom: 8 }}>Nombre visible</Text>
+            <Text style={[styles.fieldLabel, { color: colores.textoSecundario }]}>Nombre visible</Text>
             {editando ? (
               <>
                 <TextInput
@@ -263,12 +264,12 @@ export default function PerfilScreen() {
                   onChangeText={setNombreEditado}
                   placeholder="Ingrese su nombre"
                   mode="outlined"
-                  style={{ marginBottom: 8 }}
+                  style={styles.nameInput}
                 />
               </>
             ) : (
               <>
-                <Text style={{ color: colores.textoPrincipal, fontWeight: "500", marginBottom: 8 }}>
+                <Text style={[styles.nameValue, { color: colores.textoPrincipal }]}>
                   {nombreVisible || "No especificado"}
                 </Text>
                 <Button
@@ -285,11 +286,11 @@ export default function PerfilScreen() {
       </Card>
 
       {editando ? (
-        <View style={{ flexDirection: "row", gap: 8 }}>
+        <View style={styles.actionsRow}>
           <Button
             mode="contained"
             onPress={handleGuardar}
-            style={{ flex: 1, backgroundColor: colores.btnPrimario }}
+            style={[styles.flexOne, { backgroundColor: colores.btnPrimario }]}
             loading={saving}
             disabled={saving}
           >
@@ -298,7 +299,7 @@ export default function PerfilScreen() {
           <Button
             mode="outlined"
             onPress={handleCancelar}
-            style={{ flex: 1 }}
+            style={styles.flexOne}
             disabled={saving}
           >
             Cancelar
@@ -306,12 +307,12 @@ export default function PerfilScreen() {
         </View>
       ) : null}
 
-      <Card style={{ backgroundColor: colores.fondoCard }}>
-        <Card.Content style={{ gap: 12 }}>
-          <Text variant="titleMedium" style={{ fontWeight: "700", color: colores.textoPrincipal }}>
+      <Card style={[styles.card, { backgroundColor: colores.fondoCard }]}>
+        <Card.Content style={styles.cardContent}>
+          <Text variant="titleMedium" style={[styles.sectionTitle, { color: colores.textoPrincipal }]}>
             Resumen
           </Text>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <View style={styles.summaryRow}>
             {avatarUrl ? (
               <Avatar.Image
                 size={64}
@@ -321,22 +322,22 @@ export default function PerfilScreen() {
               <Avatar.Text
                 size={64}
                 label={getInitials(nombreVisible)}
-                style={{ backgroundColor: colores.avatarFondo }}
+                style={[styles.avatarFallback, { backgroundColor: colores.avatarFondo }]}
                 color={colores.avatarIcono}
               />
             )}
-            <View style={{ flex: 1, gap: 4 }}>
-              <Text style={{ color: colores.textoPrincipal, fontWeight: "700", fontSize: 16 }}>
+            <View style={styles.summaryInfo}>
+              <Text style={[styles.summaryName, { color: colores.textoPrincipal }]}>
                 {nombreVisible || "Usuario"}
               </Text>
               <Text style={{ color: colores.textoSecundario }}>{email || "Sin email"}</Text>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <View style={styles.roleRow}>
                 <MaterialCommunityIcons
                   name={rol === "ADMIN" ? "shield-crown" : "account"}
                   size={16}
                   color={colores.textoSecundario}
                 />
-                <Text style={{ color: colores.textoSecundario, fontWeight: "600" }}>
+                <Text style={[styles.roleText, { color: colores.textoSecundario }]}>
                   {rol || "NORMAL"}
                 </Text>
               </View>
@@ -346,35 +347,35 @@ export default function PerfilScreen() {
                 loading={uploadingAvatar}
                 disabled={uploadingAvatar}
                 icon="camera"
-                style={{ alignSelf: "flex-start", marginTop: 6 }}
+                style={styles.changePhotoButton}
               >
                 Cambiar foto
               </Button>
             </View>
           </View>
           <Divider />
-          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <View style={styles.statsRow}>
             <View>
-              <Text style={{ color: colores.textoTerciario, fontSize: 12 }}>Estado</Text>
-              <Text style={{ color: colores.textoPrincipal, fontWeight: "700" }}>Activo</Text>
+              <Text style={[styles.statLabel, { color: colores.textoTerciario }]}>Estado</Text>
+              <Text style={[styles.statValue, { color: colores.textoPrincipal }]}>Activo</Text>
             </View>
             <View>
-              <Text style={{ color: colores.textoTerciario, fontSize: 12 }}>Preferencias</Text>
-              <Text style={{ color: colores.textoPrincipal, fontWeight: "700" }}>
+              <Text style={[styles.statLabel, { color: colores.textoTerciario }]}>Preferencias</Text>
+              <Text style={[styles.statValue, { color: colores.textoPrincipal }]}>
                 Tema {tema === "oscuro" ? "Oscuro" : "Claro"}
               </Text>
             </View>
             <View>
-              <Text style={{ color: colores.textoTerciario, fontSize: 12 }}>Notificaciones</Text>
-              <Text style={{ color: colores.textoPrincipal, fontWeight: "700" }}>Activas</Text>
+              <Text style={[styles.statLabel, { color: colores.textoTerciario }]}>Notificaciones</Text>
+              <Text style={[styles.statValue, { color: colores.textoPrincipal }]}>Activas</Text>
             </View>
           </View>
         </Card.Content>
       </Card>
 
-      <Card style={{ backgroundColor: colores.fondoCard }}>
+      <Card style={[styles.card, { backgroundColor: colores.fondoCard }]}>
         <Card.Content>
-          <Text variant="titleMedium" style={{ fontWeight: "700", color: colores.textoPrincipal, marginBottom: 6 }}>
+          <Text variant="titleMedium" style={[styles.quickActionsTitle, { color: colores.textoPrincipal }]}>
             Acciones rápidas
           </Text>
           <List.Item
