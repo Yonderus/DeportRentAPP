@@ -2,7 +2,6 @@ import React from "react";
 import {
   Modal,
   View,
-  StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -12,7 +11,8 @@ import {
 import { Button, TextInput, Text } from "react-native-paper";
 import { Cliente } from "../../types/types";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
-import { obtenerColores } from "../../theme";
+import { obtenerColores } from "../../styles/theme";
+import { styles } from "../../styles/components/clientsDialog.styles";
 
 export type ClientForm = Omit<Cliente, "id">;
 
@@ -51,13 +51,13 @@ export default function ClienteDialog({
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onCancel}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={[s.backdrop, { backgroundColor: "rgba(0,0,0,0.5)" }]}>
+        <View style={[styles.backdrop, { backgroundColor: "rgba(0,0,0,0.5)" }]}>
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={{ width: "100%" }}
           >
-            <View style={[s.card, { backgroundColor: colores.fondoCard }]}>
-              <Text variant="titleMedium" style={[s.title, { color: colores.textoPrincipal }]}>
+            <View style={[styles.card, { backgroundColor: colores.fondoCard }]}>
+              <Text variant="titleMedium" style={[styles.title, { color: colores.textoPrincipal }]}>
                 {title}
               </Text>
 
@@ -67,7 +67,7 @@ export default function ClienteDialog({
                   placeholder="Nombre"
                   value={value.nombre}
                   onChangeText={(t) => onChange({ ...value, nombre: t })}
-                  style={[s.input, { backgroundColor: colores.fondoInput }]}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
                   outlineStyle={{ borderRadius: RADIUS }}
                   left={<TextInput.Icon icon="account" />}
                   textColor={colores.textoPrincipal}
@@ -79,7 +79,7 @@ export default function ClienteDialog({
                   placeholder="NIF/CIF (opcional)"
                   value={value.nifCif}
                   onChangeText={(t) => onChange({ ...value, nifCif: t })}
-                  style={[s.input, { backgroundColor: colores.fondoInput }]}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
                   outlineStyle={{ borderRadius: RADIUS }}
                   left={<TextInput.Icon icon="card-account-details" />}
                   textColor={colores.textoPrincipal}
@@ -91,7 +91,7 @@ export default function ClienteDialog({
                   placeholder="Teléfono (opcional)"
                   value={value.telefono}
                   onChangeText={(t) => onChange({ ...value, telefono: t })}
-                  style={[s.input, { backgroundColor: colores.fondoInput }]}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
                   outlineStyle={{ borderRadius: RADIUS }}
                   left={<TextInput.Icon icon="phone" />}
                   keyboardType="phone-pad"
@@ -104,7 +104,7 @@ export default function ClienteDialog({
                   placeholder="Email"
                   value={value.email}
                   onChangeText={(t) => onChange({ ...value, email: t })}
-                  style={[s.input, { backgroundColor: colores.fondoInput }]}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
                   outlineStyle={{ borderRadius: RADIUS }}
                   left={<TextInput.Icon icon="email" />}
                   keyboardType="email-address"
@@ -114,7 +114,7 @@ export default function ClienteDialog({
                 />
               </ScrollView>
 
-              <View style={s.row}>
+              <View style={styles.row}>
                 <Button onPress={onCancel} mode="text" disabled={saving}>
                   Cancelar
                 </Button>
@@ -130,27 +130,3 @@ export default function ClienteDialog({
   );
 }
 
-const s = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 16,
-  },
-  card: {
-    borderRadius: 20,
-    padding: 16,
-  },
-  title: {
-    fontWeight: "800",
-    marginBottom: 10,
-  },
-  input: {
-    marginTop: 10,
-  },
-  row: {
-    marginTop: 14,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-});

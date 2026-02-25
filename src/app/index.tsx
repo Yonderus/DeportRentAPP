@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useRouter } from "expo-router";
 import { View, ActivityIndicator } from "react-native";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../providers/AuthProvider";
 import { useUsuarioStore } from "../stores/useUsuarioStore";
 
 export default function Index() {

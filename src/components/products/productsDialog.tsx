@@ -2,16 +2,18 @@ import React from "react";
 import {
   Modal,
   View,
-  StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   TouchableWithoutFeedback,
   Keyboard,
+  Image,
 } from "react-native";
 import { Button, TextInput, Text, Switch } from "react-native-paper";
+import * as ImagePicker from "expo-image-picker";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
-import { obtenerColores } from "../../theme";
+import { obtenerColores } from "../../styles/theme";
+import { styles } from "../../styles/components/productsDialog.styles";
 
 export type ProductForm = {
   nombre: string;
@@ -19,6 +21,10 @@ export type ProductForm = {
   precioDia: string;
   precioVenta: string;
   activo: boolean;
+  imageUri?: string;
+  imageBase64?: string;
+  imageExt?: string;
+  imageMime?: string;
 };
 
 type Props = {
@@ -45,6 +51,28 @@ export default function ProductsDialog({
   const tema = useTemaStore((s) => s.tema);
   const colores = obtenerColores(tema);
 
+  const seleccionarImagen = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images", "videos"],
+      quality: 0.85,
+      base64: true,
+    });
+
+    if (result.canceled || !result.assets?.length) return;
+
+    const asset = result.assets[0];
+    onChange({
+      ...value,
+      imageUri: asset.uri,
+      imageBase64: asset.base64 ?? value.imageBase64,
+      imageExt: asset.fileName?.split(".").pop() ?? value.imageExt,
+      imageMime: asset.mimeType ?? value.imageMime,
+    });
+  };
+
   const aceptar = () => {
     if (saving) return;
     if (!value.nombre.trim()) return;
@@ -56,70 +84,79 @@ export default function ProductsDialog({
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onCancel}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={[s.backdrop, { backgroundColor: "rgba(0,0,0,0.4)" }]}> 
+        <View style={[styles.backdrop, { backgroundColor: "rgba(0,0,0,0.4)" }]}> 
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={{ width: "100%" }}
           >
-            <View style={[s.card, { backgroundColor: colores.fondoCard }]}> 
-              <Text variant="titleMedium" style={[s.title, { color: colores.textoPrincipal }]}>
+            <View style={[styles.card, { backgroundColor: colores.fondoCard }]}> 
+              <Text variant="titleMedium" style={[styles.title, { color: colores.textoPrincipal }]}>
                 {title}
               </Text>
 
               <ScrollView keyboardShouldPersistTaps="handled">
+                <Text style={[styles.switchLabel, { color: colores.textoPrincipal }]}>Imagen</Text>
+                <View style={styles.imageRow}>
+                  <Button mode="outlined" onPress={seleccionarImagen}>
+                    Seleccionar imagen
+                  </Button>
+                  {value.imageUri ? (
+                    <Image source={{ uri: value.imageUri }} style={styles.imagePreview} />
+                  ) : null}
+                </View>
 
-                <Text style={[s.switchLabel, { color: colores.textoPrincipal }]}>Nombre</Text>
+                <Text style={[styles.switchLabel, { color: colores.textoPrincipal }]}>Nombre</Text>
                 <TextInput
                   mode="outlined"
                   placeholder="Nombre"
                   value={value.nombre}
                   onChangeText={(t) => onChange({ ...value, nombre: t })}
-                  style={[s.input, { backgroundColor: colores.fondoInput }]}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
                   outlineStyle={{ borderRadius: RADIUS }}
                   textColor={colores.textoPrincipal}
                   placeholderTextColor={colores.textoSecundario}
                 />
 
-                <Text style={[s.switchLabel, { color: colores.textoPrincipal }]}>Descripcion (opcional)</Text>
+                <Text style={[styles.switchLabel, { color: colores.textoPrincipal }]}>Descripcion (opcional)</Text>
                 <TextInput
                   mode="outlined"
                   placeholder="Descripcion (opcional)"
                   value={value.descripcion}
                   onChangeText={(t) => onChange({ ...value, descripcion: t })}
-                  style={[s.input, { backgroundColor: colores.fondoInput }]}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
                   outlineStyle={{ borderRadius: RADIUS }}
                   textColor={colores.textoPrincipal}
                   placeholderTextColor={colores.textoSecundario}
                 />
 
-                <Text style={[s.switchLabel, { color: colores.textoPrincipal }]}>Precio por día</Text>
+                <Text style={[styles.switchLabel, { color: colores.textoPrincipal }]}>Precio por día</Text>
                 <TextInput
                   mode="outlined"
                   placeholder="Precio por dia"
                   value={value.precioDia}
                   onChangeText={(t) => onChange({ ...value, precioDia: t })}
-                  style={[s.input, { backgroundColor: colores.fondoInput }]}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
                   outlineStyle={{ borderRadius: RADIUS }}
                   keyboardType="numeric"
                   textColor={colores.textoPrincipal}
                   placeholderTextColor={colores.textoSecundario}
                 />
                 
-                <Text style={[s.switchLabel, { color: colores.textoPrincipal }]}>Precio venta (opcional)</Text>
+                <Text style={[styles.switchLabel, { color: colores.textoPrincipal }]}>Precio venta</Text>
                 <TextInput
                   mode="outlined"
-                  placeholder="Precio venta (opcional)"
+                  placeholder="Precio venta"
                   value={value.precioVenta}
                   onChangeText={(t) => onChange({ ...value, precioVenta: t })}
-                  style={[s.input, { backgroundColor: colores.fondoInput }]}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
                   outlineStyle={{ borderRadius: RADIUS }}
                   keyboardType="numeric"
                   textColor={colores.textoPrincipal}
                   placeholderTextColor={colores.textoSecundario}
                 />
 
-                <View style={s.switchRow}>
-                  <Text style={[s.switchLabel, { color: colores.textoPrincipal }]}>Activo</Text>
+                <View style={styles.switchRow}>
+                  <Text style={[styles.switchLabel, { color: colores.textoPrincipal }]}>Activo</Text>
                   <Switch
                     value={value.activo}
                     onValueChange={(v) => onChange({ ...value, activo: v })}
@@ -128,7 +165,7 @@ export default function ProductsDialog({
                 </View>
               </ScrollView>
 
-              <View style={s.row}>
+              <View style={styles.row}>
                 <Button onPress={onCancel} mode="text" disabled={saving}>
                   Cancelar
                 </Button>
@@ -144,37 +181,3 @@ export default function ProductsDialog({
   );
 }
 
-const s = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 16,
-  },
-  card: {
-    borderRadius: 12,
-    padding: 14,
-  },
-  title: {
-    fontWeight: "800",
-    marginBottom: 10,
-  },
-  input: {
-    marginTop: 10,
-  },
-  row: {
-    marginTop: 14,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  switchRow: {
-    marginTop: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  switchLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-});

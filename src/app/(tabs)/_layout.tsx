@@ -5,8 +5,8 @@ import { PaperProvider } from "react-native-paper";
 import * as React from "react";
 import { useTemaStore } from "./preferencias/index";
 import { useUsuarioStore } from "../../stores/useUsuarioStore";
-import { useAuth } from "../../context/AuthContext";
-import { obtenerColores } from "../../theme";
+import { useAuth } from "../../providers/AuthProvider";
+import { obtenerColores } from "../../styles/theme";
 import { StatusBar } from "react-native";
 import type { StatusBarStyle } from "react-native";
 

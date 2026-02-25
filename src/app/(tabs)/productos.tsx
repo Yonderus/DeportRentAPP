@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, StyleSheet, View, Text } from "react-native";
+import React, { useMemo, useState, useEffect } from "react";
+import { ActivityIndicator, Alert, FlatList, View, Text } from "react-native";
 import { FAB } from "react-native-paper";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTemaStore } from "./preferencias";
-import { obtenerColores } from "../../theme";
+import { obtenerColores } from "../../styles/theme";
 import {
   getProductos,
   getTallasProducto,
@@ -13,14 +13,20 @@ import {
   addTallaProducto,
   updateTallaProducto,
   deleteTallaProducto,
+  uploadProductoImage,
+  getSignedProductImageUrl,
 } from "../../services/productosService";
 import { Producto, TallaProducto } from "../../types/types";
 import { useUsuarioStore } from "../../stores/useUsuarioStore";
-import ProductsItem from "../../components/productsComponents/productsItem";
-import ProductsDialog, { ProductForm } from "../../components/productsComponents/productsDialog";
-import ProductsActionModal from "../../components/productsComponents/productsActionModal";
-import ProductSizeDialog, { SizeForm } from "../../components/productsComponents/productSizeDialog";
-import ProductSizesModal from "../../components/productsComponents/productSizesModal";
+import ProductsItem from "../../components/products/productsItem";
+import ProductsDialog, { ProductForm } from "../../components/products/productsDialog";
+import ProductsActionModal from "../../components/products/productsActionModal";
+import ProductSizeDialog, { SizeForm } from "../../components/products/productSizeDialog";
+import ProductSizesModal from "../../components/products/productSizesModal";
+import ProductPreviewModal from "../../components/products/productPreviewModal";
+import CartModal from "../../components/products/cartModal";
+import { useCarritoStore } from "../../stores/useCarritoStore";
+import { styles } from "../../styles/app/productos.styles";
 
 export default function ProductosScreen() {
   const tema = useTemaStore((s) => s.tema);
@@ -32,21 +38,32 @@ export default function ProductosScreen() {
   const [actionsVisible, setActionsVisible] = useState(false);
   const [sizesVisible, setSizesVisible] = useState(false);
   const [sizeFormVisible, setSizeFormVisible] = useState(false);
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [cartVisible, setCartVisible] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null);
   const [editingSizeId, setEditingSizeId] = useState<number | null>(null);
+  const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
   const [form, setForm] = useState<ProductForm>({
     nombre: "",
     descripcion: "",
     precioDia: "",
     precioVenta: "",
     activo: true,
+    imageUri: "",
+    imageBase64: "",
+    imageExt: "",
+    imageMime: "",
   });
   const [sizeForm, setSizeForm] = useState<SizeForm>({
     codigoTalla: "",
     descripcion: "",
     activo: true,
   });
+  const addProductoCarrito = useCarritoStore((s) => s.addProducto);
+  const totalCarritoItems = useCarritoStore((s) =>
+    s.items.reduce((sum, item) => sum + item.cantidad, 0)
+  );
   const {
     data: productos = [],
     isLoading: isLoadingProductos,
@@ -78,6 +95,39 @@ export default function ProductosScreen() {
       });
     return map;
   }, [tallas]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadImages = async () => {
+      const entries = await Promise.all(
+        productos
+          .filter((producto) => producto.imagePath)
+          .map(async (producto) => {
+            try {
+              const url = await getSignedProductImageUrl(producto.imagePath as string);
+              return [producto.id, url] as const;
+            } catch {
+              return [producto.id, null] as const;
+            }
+          })
+      );
+
+      if (!mounted) return;
+
+      const map: Record<number, string> = {};
+      entries.forEach(([id, url]) => {
+        if (url) map[id] = url;
+      });
+      setImageUrls(map);
+    };
+
+    loadImages();
+
+    return () => {
+      mounted = false;
+    };
+  }, [productos]);
 
   const isLoading = isLoadingProductos || isLoadingTallas;
   const isError = isErrorProductos || isErrorTallas;
@@ -212,6 +262,10 @@ export default function ProductosScreen() {
       precioDia: "",
       precioVenta: "",
       activo: true,
+      imageUri: "",
+      imageBase64: "",
+      imageExt: "",
+      imageMime: "",
     });
     setFormVisible(true);
   };
@@ -224,6 +278,10 @@ export default function ProductosScreen() {
       precioDia: String(producto.precioDia ?? ""),
       precioVenta: producto.precioVenta ? String(producto.precioVenta) : "",
       activo: producto.activo,
+      imageUri: "",
+      imageBase64: "",
+      imageExt: "",
+      imageMime: "",
     });
     setFormVisible(true);
   };
@@ -232,20 +290,34 @@ export default function ProductosScreen() {
     const precioDia = Number(data.precioDia.replace(",", "."));
     const precioVenta = data.precioVenta.trim()
       ? Number(data.precioVenta.replace(",", "."))
-      : null;
+      : 0;
 
     const payload: Omit<Producto, "id"> = {
       nombre: data.nombre.trim(),
       descripcion: data.descripcion.trim() ? data.descripcion.trim() : undefined,
       precioDia: Number.isFinite(precioDia) ? precioDia : 0,
-      precioVenta: Number.isFinite(precioVenta ?? 0) ? precioVenta : null,
+      precioVenta: Number.isFinite(precioVenta) ? precioVenta : 0,
       activo: data.activo,
     };
 
     if (editingId === null) {
-      await createMutation.mutateAsync(payload);
+      const created = await createMutation.mutateAsync(payload);
+      if (data.imageBase64) {
+        const imagePath = await uploadProductoImage(created.id, data.imageBase64, {
+          extension: data.imageExt,
+          mimeType: data.imageMime,
+        });
+        await updateMutation.mutateAsync({ id: created.id, data: { imagePath } });
+      }
     } else {
       await updateMutation.mutateAsync({ id: editingId, data: payload });
+      if (data.imageBase64) {
+        const imagePath = await uploadProductoImage(editingId, data.imageBase64, {
+          extension: data.imageExt,
+          mimeType: data.imageMime,
+        });
+        await updateMutation.mutateAsync({ id: editingId, data: { imagePath } });
+      }
     }
 
     setFormVisible(false);
@@ -297,10 +369,17 @@ export default function ProductosScreen() {
       <View>
         <ProductsItem
           producto={item}
-          onPress={isAdmin ? (producto) => {
-            setSelectedProduct(producto);
-            setActionsVisible(true);
-          } : undefined}
+          imageUrl={imageUrls[item.id]}
+          onPress={
+            (producto) => {
+              setSelectedProduct(producto);
+              if (isAdmin) {
+                setActionsVisible(true);
+              } else {
+                setPreviewVisible(true);
+              }
+            }
+          }
         />
         {tallas ? (
           <Text style={[styles.sizes, { color: colores.textoTerciario }]}>Tallas: {tallas}</Text>
@@ -340,7 +419,22 @@ export default function ProductosScreen() {
           onPress={abrirCrear}
           disabled={createMutation.isPending || updateMutation.isPending}
         />
-      ) : null}
+      ) : (
+        <>
+          <FAB
+            icon="cart"
+            style={[styles.fab, { backgroundColor: colores.fabColor }]}
+            onPress={() => setCartVisible(true)}
+          />
+          {totalCarritoItems > 0 ? (
+            <View style={[styles.cartBadge, { backgroundColor: colores.enlaces }]}>
+              <Text style={[styles.cartBadgeText, { color: colores.textoInverso }]}>
+                {totalCarritoItems}
+              </Text>
+            </View>
+          ) : null}
+        </>
+      )}
 
       <ProductsDialog
         visible={formVisible}
@@ -390,43 +484,48 @@ export default function ProductosScreen() {
         onSave={guardarTalla}
         saving={createSizeMutation.isPending || updateSizeMutation.isPending}
       />
+
+      <ProductPreviewModal
+        visible={previewVisible}
+        producto={selectedProduct}
+        tallas={
+          selectedProduct
+            ? tallas.filter((t) => t.productoId === selectedProduct.id && t.activo)
+            : []
+        }
+        imageUrl={selectedProduct ? imageUrls[selectedProduct.id] : null}
+        onClose={() => setPreviewVisible(false)}
+        onAddToCart={(producto, talla) => {
+          if (producto.precioVenta && producto.precioVenta > 0) {
+            Alert.alert("Añadir al carrito", "¿Quieres añadirlo como alquiler o compra?", [
+              { text: "Cancelar", style: "cancel" },
+              {
+                text: "Alquiler",
+                onPress: () => {
+                  addProductoCarrito(producto, talla, "ALQUILER", imageUrls[producto.id] ?? null);
+                  Alert.alert("Carrito", `${producto.nombre} (${talla.codigoTalla}) añadido como alquiler`);
+                  setPreviewVisible(false);
+                },
+              },
+              {
+                text: "Compra",
+                onPress: () => {
+                  addProductoCarrito(producto, talla, "COMPRA", imageUrls[producto.id] ?? null);
+                  Alert.alert("Carrito", `${producto.nombre} (${talla.codigoTalla}) añadido como compra`);
+                  setPreviewVisible(false);
+                },
+              },
+            ]);
+            return;
+          }
+
+          addProductoCarrito(producto, talla, "ALQUILER", imageUrls[producto.id] ?? null);
+          Alert.alert("Carrito", `${producto.nombre} (${talla.codigoTalla}) añadido como alquiler`);
+          setPreviewVisible(false);
+        }}
+      />
+
+      <CartModal visible={cartVisible} onClose={() => setCartVisible(false)} />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "800",
-    marginBottom: 12,
-  },
-  listContent: {
-    paddingBottom: 100,
-  },
-  sizes: {
-    fontSize: 12,
-    marginTop: 2,
-    marginBottom: 10,
-    marginLeft: 12,
-  },
-  centerState: {
-    paddingHorizontal: 16,
-    paddingVertical: 24,
-    alignItems: "center",
-    gap: 12,
-  },
-  stateText: {
-    fontSize: 14,
-    textAlign: "center",
-  },
-  fab: {
-    position: "absolute",
-    right: 16,
-    bottom: 16,
-  },
-});

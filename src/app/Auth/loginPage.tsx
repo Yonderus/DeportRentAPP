@@ -5,9 +5,9 @@ import { Avatar } from "react-native-paper";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
-import TextFieldLogin from "../../components/textFieldLogin";
+import TextFieldLogin from "../../components/common/textFieldLogin";
 import { useTemaStore } from "../(tabs)/preferencias";
-import { obtenerColores } from "../../theme";
+import { obtenerColores } from "../../styles/theme";
 // React Query para manejar el login y estados de carga
 import { useMutation } from "@tanstack/react-query";
 import { loginWithPassword } from "../../services/authService";

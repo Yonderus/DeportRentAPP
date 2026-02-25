@@ -1,9 +1,10 @@
 import React from "react";
-import { Modal, View, StyleSheet, Alert, TouchableOpacity } from "react-native";
+import { Modal, View, Alert, TouchableOpacity } from "react-native";
 import { Button, Text } from "react-native-paper";
 import { Cliente } from "../../types/types";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
-import { obtenerColores } from "../../theme";
+import { obtenerColores } from "../../styles/theme";
+import { styles } from "../../styles/components/clientsActionModal.styles";
 
 type Props = {
   visible: boolean;
@@ -41,16 +42,16 @@ export default function ClienteActionsModal({
 
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
-      <TouchableOpacity style={[s.backdrop, { backgroundColor: "rgba(0,0,0,0.5)" }]} activeOpacity={1} onPress={onClose}>
-        <TouchableOpacity style={[s.card, { backgroundColor: colores.fondoCard }]} activeOpacity={1}>
-          <Text variant="titleMedium" style={[s.title, { color: colores.textoPrincipal }]}>
+      <TouchableOpacity style={[styles.backdrop, { backgroundColor: "rgba(0,0,0,0.5)" }]} activeOpacity={1} onPress={onClose}>
+        <TouchableOpacity style={[styles.card, { backgroundColor: colores.fondoCard }]} activeOpacity={1}>
+          <Text variant="titleMedium" style={[styles.title, { color: colores.textoPrincipal }]}>
             {client.nombre} {client.email}
           </Text>
 
-          <Text style={[s.line, { color: colores.textoSecundario }]}>📞 {client.telefono}</Text>
-          <Text style={[s.line, { color: colores.textoSecundario }]}>📧 {client.email || "-"}</Text>
+          <Text style={[styles.line, { color: colores.textoSecundario }]}>📞 {client.telefono}</Text>
+          <Text style={[styles.line, { color: colores.textoSecundario }]}>📧 {client.email || "-"}</Text>
 
-          <View style={s.row}>
+          <View style={styles.row}>
             <Button mode="text" onPress={confirmarBorrado}>
               Eliminar
             </Button>
@@ -71,28 +72,3 @@ export default function ClienteActionsModal({
     </Modal>
   );
 }
-
-const s = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 16,
-  },
-  card: {
-    borderRadius: 16,
-    padding: 16,
-  },
-  title: {
-    fontWeight: "800",
-    marginBottom: 10,
-  },
-  line: {
-    marginTop: 6,
-  },
-  row: {
-    marginTop: 14,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-});

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   ActivityIndicator,
   ScrollView,
   TouchableOpacity,
@@ -14,9 +13,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Cliente } from "../../../types/types";
 import { getClientById, updateClient, deleteClient } from "../../../services/clientsService";
-import ClienteDialog, { ClientForm } from "../../../components/clientsComponents/clientsDialog";
+import ClienteDialog, { ClientForm } from "../../../components/clients/clientsDialog";
 import { useTemaStore } from "../preferencias";
-import { obtenerColores } from "../../../theme";
+import { obtenerColores } from "../../../styles/theme";
+import { styles } from "../../../styles/app/clienteDetalle.styles";
 
 const toForm = (c: Cliente): ClientForm => ({
   nombre: c.nombre,
@@ -134,17 +134,17 @@ export default function ClienteDetallado() {
 
   if (isLoading) {
     return (
-      <View style={[s.center, { backgroundColor: colores.fondoPrincipal }]}>
+      <View style={[styles.center, { backgroundColor: colores.fondoPrincipal }]}>
         <ActivityIndicator size="large" />
-        <Text style={[s.loadingText, { color: colores.textoSecundario }]}>Cargando cliente...</Text>
+        <Text style={[styles.loadingText, { color: colores.textoSecundario }]}>Cargando cliente...</Text>
       </View>
     );
   }
 
   if (isError) {
     return (
-      <View style={[s.center, { backgroundColor: colores.fondoPrincipal }]}>
-        <Text style={[s.error, { color: colores.enlaces }]}>
+      <View style={[styles.center, { backgroundColor: colores.fondoPrincipal }]}>
+        <Text style={[styles.error, { color: colores.enlaces }]}>
           {(error as Error)?.message ?? "Error al cargar cliente"}
         </Text>
       </View>
@@ -153,80 +153,80 @@ export default function ClienteDetallado() {
 
   if (!cliente) {
     return (
-      <View style={[s.center, { backgroundColor: colores.fondoPrincipal }]}>
-        <Text style={[s.error, { color: colores.enlaces }]}>Cliente no encontrado</Text>
+      <View style={[styles.center, { backgroundColor: colores.fondoPrincipal }]}>
+        <Text style={[styles.error, { color: colores.enlaces }]}>Cliente no encontrado</Text>
       </View>
     );
   }
 
   return (
     <ScrollView 
-      style={[s.container, { backgroundColor: colores.fondoPrincipal }]}
-      contentContainerStyle={{ paddingBottom: 20 }}
+      style={[styles.container, { backgroundColor: colores.fondoPrincipal }]}
+      contentContainerStyle={styles.contentContainer}
     >
       {/* Botón de atrás */}
       <TouchableOpacity 
         onPress={() => router.back()} 
-        style={{ padding: 16, paddingBottom: 8 }}
+        style={styles.backButton}
       >
         <Feather name="chevron-left" size={28} color={colores.textoPrincipal} />
       </TouchableOpacity>
 
-      <View style={s.header}>
+      <View style={styles.header}>
         <Feather name="user" size={32} color={colores.btnPrimario} />
-        <Text style={[s.name, { color: colores.textoPrincipal }]}>
+        <Text style={[styles.name, { color: colores.textoPrincipal }]}>
           {cliente.nombre}
         </Text>
       </View>
 
-      <View style={[s.card, { backgroundColor: colores.fondoCard }]}>
-        <View style={s.row}>
+      <View style={[styles.card, { backgroundColor: colores.fondoCard }]}>
+        <View style={styles.row}>
           <Feather name="mail" size={18} color={colores.iconoColorGris} />
-          <Text style={[s.value, { color: colores.textoSecundario }]}>{cliente.email || "-"}</Text>
+          <Text style={[styles.value, { color: colores.textoSecundario }]}>{cliente.email || "-"}</Text>
         </View>
 
-        <View style={s.row}>
+        <View style={styles.row}>
           <Feather name="phone" size={18} color={colores.iconoColorGris} />
-          <Text style={[s.value, { color: colores.textoSecundario }]}>{cliente.telefono || "-"}</Text>
+          <Text style={[styles.value, { color: colores.textoSecundario }]}>{cliente.telefono || "-"}</Text>
         </View>
 
         {cliente.nifCif && (
-          <View style={s.row}>
+          <View style={styles.row}>
             <Feather name="layers" size={18} color={colores.iconoColorGris} />
-            <Text style={[s.value, { color: colores.textoSecundario }]}>{cliente.nifCif}</Text>
+            <Text style={[styles.value, { color: colores.textoSecundario }]}>{cliente.nifCif}</Text>
           </View>
         )}
 
         {cliente.notas && (
-          <View style={s.row}>
+          <View style={styles.row}>
             <Feather name="file-text" size={18} color={colores.iconoColorGris} />
-            <Text style={[s.value, { color: colores.textoSecundario }]}>{cliente.notas}</Text>
+            <Text style={[styles.value, { color: colores.textoSecundario }]}>{cliente.notas}</Text>
           </View>
         )}
       </View>
 
-      <View style={{ paddingHorizontal: 16 }}>
-        <Text style={[s.sectionTitle, { color: colores.textoPrincipal }]}>Estado</Text>
+      <View style={styles.sectionTitleContainer}>
+        <Text style={[styles.sectionTitle, { color: colores.textoPrincipal }]}>Estado</Text>
       </View>
 
-      <View style={[s.card, { backgroundColor: colores.fondoCard }]}>
-        <Text style={[s.value, { color: colores.textoSecundario }]}>
+      <View style={[styles.card, { backgroundColor: colores.fondoCard }]}>
+        <Text style={[styles.value, { color: colores.textoSecundario }]}>
           {cliente.activo ? "✓ Cliente activo" : "✗ Cliente inactivo"}
         </Text>
       </View>
 
       <TouchableOpacity
-        style={[s.editButton, { backgroundColor: colores.btnPrimario }]}
+        style={[styles.editButton, { backgroundColor: colores.btnPrimario }]}
         onPress={() => {
           setForm(toForm(cliente));
           setEditarVisible(true);
         }}
       >
-        <Text style={s.editText}>Editar Cliente</Text>
+        <Text style={styles.editText}>Editar Cliente</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[s.deleteButton, { backgroundColor: "#ef4444" }]}
+        style={styles.deleteButton}
         onPress={() => {
           Alert.alert("Eliminar Cliente", "Seguro que quieres eliminarlo", [
             { text: "Cancelar", style: "cancel" },
@@ -240,7 +240,7 @@ export default function ClienteDetallado() {
           ]);
         }}
       >
-        <Text style={s.deleteText}>Eliminar Cliente</Text>
+        <Text style={styles.deleteText}>Eliminar Cliente</Text>
       </TouchableOpacity>
 
       <ClienteDialog
@@ -254,49 +254,3 @@ export default function ClienteDetallado() {
     </ScrollView>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, paddingTop: 0 },
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  loadingText: { marginTop: 12 },
-  error: { fontSize: 16 },
-
-  header: { alignItems: "center", marginBottom: 24, gap: 8, paddingHorizontal: 16 },
-  name: { fontSize: 22, fontWeight: "700" },
-
-  card: {
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
-    marginHorizontal: 16,
-    elevation: 3,
-  },
-
-  row: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 },
-  value: { fontSize: 15 },
-
-  sectionTitle: { fontSize: 16, fontWeight: "700", marginBottom: 8 },
-  pedido: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 8 },
-  pedidoText: { fontSize: 14 },
-  empty: { fontSize: 14, textAlign: "center" },
-
-  editButton: {
-    paddingVertical: 14,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 12,
-    marginHorizontal: 16,
-  },
-  editText: { color: "#ffffff", fontWeight: "800", fontSize: 16 },
-
-  deleteButton: {
-    paddingVertical: 14,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 16,
-    marginHorizontal: 16,
-  },
-  deleteText: { color: "#ffffff", fontWeight: "800", fontSize: 16 },
-});

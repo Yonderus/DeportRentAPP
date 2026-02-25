@@ -58,6 +58,7 @@ export interface Producto {
   descripcion?: string;
   precioDia: number; // precio por unidad y día
   precioVenta?: number | null;
+  imagePath?: string | null;
   activo: boolean;
 }
 
@@ -72,14 +73,16 @@ export interface TallaProducto {
 export interface Pedido {
   id: number;
   codigo: string;
+  tipo?: string;
   clienteId: number;
   direccionEntregaId?: number;
   direccionRecogidaId?: number;
   fechaInicio: string; // ISO (YYYY-MM-DD)
   fechaFin: string;    // ISO
   estado: EstadoPedido;
-  creadoPor: number;   // userId
+  creadoPor?: string | number;   // userId o uuid
   notas?: string;
+  createdAt?: string;
 }
 
 export interface LineaPedido {

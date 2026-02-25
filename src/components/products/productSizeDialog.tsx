@@ -2,7 +2,6 @@ import React from "react";
 import {
   Modal,
   View,
-  StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -11,7 +10,8 @@ import {
 } from "react-native";
 import { Button, TextInput, Text, Switch } from "react-native-paper";
 import { useTemaStore } from "../../app/(tabs)/preferencias";
-import { obtenerColores } from "../../theme";
+import { obtenerColores } from "../../styles/theme";
+import { styles } from "../../styles/components/productSizeDialog.styles";
 
 export type SizeForm = {
   codigoTalla: string;
@@ -53,13 +53,13 @@ export default function ProductSizeDialog({
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onCancel}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={[s.backdrop, { backgroundColor: "rgba(0,0,0,0.4)" }]}>
+        <View style={[styles.backdrop, { backgroundColor: "rgba(0,0,0,0.4)" }]}>
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={{ width: "100%" }}
           >
-            <View style={[s.card, { backgroundColor: colores.fondoCard }]}> 
-              <Text variant="titleMedium" style={[s.title, { color: colores.textoPrincipal }]}>
+            <View style={[styles.card, { backgroundColor: colores.fondoCard }]}> 
+              <Text variant="titleMedium" style={[styles.title, { color: colores.textoPrincipal }]}>
                 {title}
               </Text>
 
@@ -69,7 +69,7 @@ export default function ProductSizeDialog({
                   placeholder="Codigo talla"
                   value={value.codigoTalla}
                   onChangeText={(t) => onChange({ ...value, codigoTalla: t })}
-                  style={[s.input, { backgroundColor: colores.fondoInput }]}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
                   outlineStyle={{ borderRadius: RADIUS }}
                   textColor={colores.textoPrincipal}
                   placeholderTextColor={colores.textoSecundario}
@@ -80,14 +80,14 @@ export default function ProductSizeDialog({
                   placeholder="Descripcion (opcional)"
                   value={value.descripcion}
                   onChangeText={(t) => onChange({ ...value, descripcion: t })}
-                  style={[s.input, { backgroundColor: colores.fondoInput }]}
+                  style={[styles.input, { backgroundColor: colores.fondoInput }]}
                   outlineStyle={{ borderRadius: RADIUS }}
                   textColor={colores.textoPrincipal}
                   placeholderTextColor={colores.textoSecundario}
                 />
 
-                <View style={s.switchRow}>
-                  <Text style={[s.switchLabel, { color: colores.textoPrincipal }]}>Activo</Text>
+                <View style={styles.switchRow}>
+                  <Text style={[styles.switchLabel, { color: colores.textoPrincipal }]}>Activo</Text>
                   <Switch
                     value={value.activo}
                     onValueChange={(v) => onChange({ ...value, activo: v })}
@@ -96,7 +96,7 @@ export default function ProductSizeDialog({
                 </View>
               </ScrollView>
 
-              <View style={s.row}>
+              <View style={styles.row}>
                 <Button onPress={onCancel} mode="text" disabled={saving}>
                   Cancelar
                 </Button>
@@ -112,37 +112,3 @@ export default function ProductSizeDialog({
   );
 }
 
-const s = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 16,
-  },
-  card: {
-    borderRadius: 12,
-    padding: 14,
-  },
-  title: {
-    fontWeight: "800",
-    marginBottom: 10,
-  },
-  input: {
-    marginTop: 10,
-  },
-  row: {
-    marginTop: 14,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  switchRow: {
-    marginTop: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  switchLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-});

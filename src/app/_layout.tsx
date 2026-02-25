@@ -1,7 +1,7 @@
 import { Stack } from "expo-router";
 import { PaperProvider } from "react-native-paper";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "../context/AuthContext";
+import { AuthProvider } from "../providers/AuthProvider";
 
 // Configuración global de React Query
 const queryClient = new QueryClient({
