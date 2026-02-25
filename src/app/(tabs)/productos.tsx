@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { ActivityIndicator, FlatList, View, Text } from "react-native";
+import { ActivityIndicator, Alert, FlatList, View, Text } from "react-native";
 import { FAB } from "react-native-paper";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTemaStore } from "./preferencias";
@@ -23,6 +23,7 @@ import ProductsDialog, { ProductForm } from "../../components/products/productsD
 import ProductsActionModal from "../../components/products/productsActionModal";
 import ProductSizeDialog, { SizeForm } from "../../components/products/productSizeDialog";
 import ProductSizesModal from "../../components/products/productSizesModal";
+import ProductPreviewModal from "../../components/products/productPreviewModal";
 import { styles } from "../../styles/app/productos.styles";
 
 export default function ProductosScreen() {
@@ -35,6 +36,7 @@ export default function ProductosScreen() {
   const [actionsVisible, setActionsVisible] = useState(false);
   const [sizesVisible, setSizesVisible] = useState(false);
   const [sizeFormVisible, setSizeFormVisible] = useState(false);
+  const [previewVisible, setPreviewVisible] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null);
   const [editingSizeId, setEditingSizeId] = useState<number | null>(null);
@@ -362,12 +364,14 @@ export default function ProductosScreen() {
           producto={item}
           imageUrl={imageUrls[item.id]}
           onPress={
-            isAdmin
-              ? (producto) => {
-                  setSelectedProduct(producto);
-                  setActionsVisible(true);
-                }
-              : undefined
+            (producto) => {
+              setSelectedProduct(producto);
+              if (isAdmin) {
+                setActionsVisible(true);
+              } else {
+                setPreviewVisible(true);
+              }
+            }
           }
         />
         {tallas ? (
@@ -457,6 +461,17 @@ export default function ProductosScreen() {
         onCancel={() => setSizeFormVisible(false)}
         onSave={guardarTalla}
         saving={createSizeMutation.isPending || updateSizeMutation.isPending}
+      />
+
+      <ProductPreviewModal
+        visible={previewVisible}
+        producto={selectedProduct}
+        imageUrl={selectedProduct ? imageUrls[selectedProduct.id] : null}
+        onClose={() => setPreviewVisible(false)}
+        onAddToCart={(producto) => {
+          Alert.alert("Carrito", `${producto.nombre} añadido al carrito`);
+          setPreviewVisible(false);
+        }}
       />
     </View>
   );
